@@ -1,0 +1,147 @@
+# MAVLink Link Tester
+
+A professional tool for characterizing the reliability and latency of MAVLink connections. Tests multiple MAVLink links simultaneously for packet loss, latency, and outages.
+
+## Features
+
+- **Multi-link testing**: Monitor multiple MAVLink connections concurrently
+- **Comprehensive metrics**: Track packet loss, latency, out-of-order packets, and link outages
+- **Multiple transport types**: Support for UDP, TCP, and serial connections
+- **Configurable stream rates**: Control MAVLink stream rates for different data types
+- **MAVLink 2.0 signing**: Full support for authenticated MAVLink connections
+- **CSV output**: Detailed metrics exported to CSV files for analysis
+- **Real-time monitoring**: Live statistics during testing
+
+## Installation
+
+### Prerequisites
+
+- Python 3.8 or higher
+- Poetry (for dependency management)
+
+### Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/stephendade/mavlinklinktester.git
+cd mavlinklinktester
+
+# Install dependencies
+poetry install
+```
+
+## Usage
+
+### Basic Usage
+
+```bash
+poetry run python src/mavlink_link_tester.py --system-id 1 --component-id 1 <CONNECTION>
+```
+
+### Connection Strings
+
+- **UDP Input (Server)**: `udpin:0.0.0.0:14550` - Listen for incoming UDP connections
+- **UDP Output (Client)**: `udpout:192.168.1.100:14550` - Connect to remote UDP endpoint
+- **TCP**: `tcp:192.168.1.100:5760` - Connect to TCP endpoint
+- **Serial**: `/dev/ttyUSB0:57600` - Connect via serial port
+
+### Examples
+
+**Test single UDP link:**
+```bash
+poetry run python src/mavlink_link_tester.py --system-id 1 --component-id 1 udpin:0.0.0.0:14550
+```
+
+**Test multiple links simultaneously:**
+```bash
+poetry run python src/mavlink_link_tester.py --system-id 1 --component-id 1 \
+  udpin:0.0.0.0:14550 \
+  udpout:192.168.1.100:14551
+```
+
+**Test with custom duration:**
+```bash
+poetry run python src/mavlink_link_tester.py --system-id 1 --component-id 1 \
+  --duration 300 \
+  udpin:0.0.0.0:14550
+```
+
+**Test serial connection:**
+```bash
+poetry run python src/mavlink_link_tester.py --system-id 1 --component-id 1 \
+  /dev/ttyUSB0:57600
+```
+
+**Test with custom stream rates:**
+```bash
+poetry run python src/mavlink_link_tester.py --system-id 1 --component-id 1 \
+  --rate-raw-sensors 10 \
+  --rate-position 5 \
+  /dev/ttyACM0:115200
+```
+
+**Test with MAVLink 2.0 signing:**
+```bash
+poetry run python src/mavlink_link_tester.py --system-id 1 --component-id 1 \
+  --signing-passphrase mysecretkey \
+  udpin:0.0.0.0:14550
+```
+
+## Command-Line Options
+
+### Required Arguments
+
+- `--system-id`: Target system ID (autopilot)
+- `--component-id`: Target component ID (autopilot)
+
+### Optional Arguments
+
+- `--duration`: Test duration in seconds (default: run indefinitely until Ctrl+C)
+- `--outage-timeout`: Outage detection timeout in seconds (default: 1.0)
+- `--recovery-hysteresis`: Number of consecutive packets required to exit outage (default: 3)
+- `--output-dir`: Output directory for CSV files (default: `output`)
+
+### Stream Rate Control
+
+Control the frequency of different MAVLink message streams (in Hz):
+
+- `--rate-raw-sensors`: RAW_SENSORS stream rate (default: 4 Hz)
+- `--rate-extended-status`: EXTENDED_STATUS stream rate (default: 4 Hz)
+- `--rate-rc-channels`: RC_CHANNELS stream rate (default: 4 Hz)
+- `--rate-position`: POSITION stream rate (default: 4 Hz)
+- `--rate-extra1`: EXTRA1 stream rate (default: 4 Hz)
+- `--rate-extra2`: EXTRA2 stream rate (default: 4 Hz)
+- `--rate-extra3`: EXTRA3 stream rate (default: 4 Hz)
+
+### MAVLink Signing
+
+- `--signing-passphrase`: MAVLink 2.0 signing passphrase (hashed with SHA-256)
+- `--signing-link-id`: MAVLink 2.0 signing link ID (default: use monitor link_id)
+
+## Output
+
+The tool generates CSV files in the specified output directory (default: `output/`) containing:
+
+- `elapsed_seconds`: Time elapsed since test start
+- `total_packets`: Total packets received
+- `dropped_packets`: Number of dropped packets
+- `latency_ms`: Round-trip latency in milliseconds
+- `bad_order_packets`: Packets received out of sequence
+- `bytes`: Total bytes transferred
+- `link_outage`: Boolean indicating if link is in outage state
+
+CSV files are named with the connection string and timestamp for easy identification.
+
+## License
+
+This project is licensed under the GNU General Public License v3.0 or later. See the LICENSE file for details.
+
+## Author
+
+**Stephen Dade**  
+Email: stephen_dade@hotmail.com  
+GitHub: [@stephendade](https://github.com/stephendade)
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit issues or pull requests on GitHub.

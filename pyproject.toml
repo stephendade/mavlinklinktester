@@ -1,0 +1,26 @@
+[project]
+name = "mavlinklinktester"
+version = "0.1.0"
+description = "Characterise the reliability and latency of MAVLink connections"
+authors = [{ name = "Stephen Dade", email = "stephen_dade@hotmail.com" }]
+maintainers = [{ name = "Stephen Dade", email = "stephen_dade@hotmail.com" }]
+license = "GPL-3.0-or-later"
+readme = "README.md"
+package-mode = false
+requires-python = ">=3.8"
+dependencies = [
+    "pymavlink (>=2.4.49,<3.0.0)",
+    "pyserial-asyncio (>=0.6,<0.7)"
+]
+
+[project.urls]
+homepage = "https://github.com/stephendade/mavlinklinktester"
+repository = "https://github.com/stephendade/mavlinklinktester"
+
+[project.scripts]
+mavlink-link-tester = "mavlink_link_tester:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
