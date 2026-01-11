@@ -34,7 +34,7 @@ jobs:
       
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --with dev
+        run: poetry install --no-interaction --with dev --no-root
       
       - name: Run flake8
         run: |
@@ -67,7 +67,7 @@ jobs:
       
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --with dev
+        run: poetry install --no-interaction --with dev --no-root
       
       - name: Run mypy
         run: |
@@ -105,7 +105,7 @@ jobs:
       
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --with dev
+        run: poetry install --no-interaction --with dev --no-root
       
       - name: Run pytest
         run: |

@@ -27,10 +27,10 @@ git clone https://github.com/stephendade/mavlinklinktester.git
 cd mavlinklinktester
 
 # Install dependencies
-poetry install
+poetry install --no-root
 
 # For development (includes testing and code quality tools)
-poetry install --with dev
+poetry install --with dev --no-root
 ```
 
 ## Usage
