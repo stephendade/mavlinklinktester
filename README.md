@@ -17,7 +17,7 @@ A professional tool for characterizing the reliability and latency of MAVLink co
 ### Prerequisites
 
 - Python 3.8 or higher
-- Poetry (for dependency management)
+- Poetry 2.2.1 or higher (for dependency management)
 
 ### Setup
 
