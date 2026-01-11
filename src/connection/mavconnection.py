@@ -24,7 +24,7 @@ import logging
 import time
 
 
-from mavlink.pymavutil import getpymavlinkpackage
+from ..mavlink.pymavutil import getpymavlinkpackage
 
 
 class MAVConnection(asyncio.Protocol):

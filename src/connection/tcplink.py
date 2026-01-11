@@ -20,7 +20,7 @@ Module for defining tcp connections to mavlink
 import logging
 import socket
 
-from connection.mavconnection import MAVConnection
+from .mavconnection import MAVConnection
 
 
 class TCPConnection(MAVConnection):

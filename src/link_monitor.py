@@ -13,10 +13,10 @@ from datetime import datetime
 
 import serial_asyncio
 
-from connection.seriallink import SerialConnection
-from connection.tcplink import TCPConnection
-from connection.udplink import UDPConnection
-from histogram_generator import HistogramGenerator
+from src.connection.seriallink import SerialConnection
+from src.connection.tcplink import TCPConnection
+from src.connection.udplink import UDPConnection
+from src.histogram_generator import HistogramGenerator
 
 
 class LinkMonitor:

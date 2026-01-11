@@ -19,7 +19,7 @@ Module for defining udp connections to mavlink
 """
 import logging
 
-from connection.mavconnection import MAVConnection
+from .mavconnection import MAVConnection
 
 
 class UDPConnection(MAVConnection):

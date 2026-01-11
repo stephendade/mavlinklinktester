@@ -7,7 +7,7 @@ maintainers = [{ name = "Stephen Dade", email = "stephen_dade@hotmail.com" }]
 license = "GPL-3.0-or-later"
 readme = "README.md"
 package-mode = false
-requires-python = ">=3.8"
+requires-python = ">=3.8.1"
 dependencies = [
     "pymavlink (>=2.4.49,<3.0.0)",
     "pyserial-asyncio (>=0.6,<0.7)"
@@ -19,6 +19,14 @@ repository = "https://github.com/stephendade/mavlinklinktester"
 
 [project.scripts]
 mavlink-link-tester = "mavlink_link_tester:main"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.0"
+pytest-asyncio = "^0.21"
+pytest-cov = "^4.0"
+pytest-mock = "^3.10"
+flake8 = "^6.0"
+mypy = "^1.0"
 
 [build-system]
 requires = ["poetry-core"]

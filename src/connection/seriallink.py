@@ -19,7 +19,7 @@ Module for defining udp connections to mavlink
 """
 import fnmatch
 
-from connection.mavconnection import MAVConnection
+from .mavconnection import MAVConnection
 
 import serial.tools.list_ports
 

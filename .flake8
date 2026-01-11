@@ -1,0 +1,51 @@
+[flake8]
+# Flake8 configuration for mavlinklinktester
+
+# Maximum line length
+max-line-length = 120
+
+# Exclude paths
+exclude =
+    .git,
+    __pycache__,
+    .pytest_cache,
+    .coverage,
+    htmlcov,
+    dist,
+    build,
+    *.egg-info,
+    .venv,
+    venv,
+    env,
+    output
+
+# Error codes to ignore
+ignore =
+    # E203: whitespace before ':' (conflicts with black)
+    E203,
+    # W503: line break before binary operator (conflicts with black)
+    W503,
+    # E501: line too long (handled by max-line-length)
+    # We allow long lines in some cases (URLs, etc.)
+
+# Complexity settings
+max-complexity = 15
+
+# Per-file ignores
+per-file-ignores =
+    # Imports in __init__.py files
+    __init__.py:F401,F403
+    # Tests can have longer functions and unused imports for fixtures
+    tests/*:E501,F401,F811
+
+# Enable plugins
+enable-extensions = G
+
+# Show source code for errors
+show-source = True
+
+# Show statistics at end
+statistics = True
+
+# Count errors
+count = True
