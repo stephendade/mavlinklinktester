@@ -255,19 +255,6 @@ class TestMAVConnection:
         assert conn.mav.signing.link_id == 5
         assert conn.mav.signing.sign_outgoing is True
 
-    def test_bandwidth_tracking(self, connection):
-        """Test bandwidth measurement."""
-
-        # Simulate receiving some data
-        connection.updatebandwidth(1000)
-        connection.updatebandwidth(1000)
-
-        # Wait a moment
-        time.sleep(0.1)
-
-        # Update bandwidth
-        connection.updatebandwidth(1000)
-
     def test_connection_lost_callback(self, connection):
         """Test connection_lost callback."""
         close_callback = Mock()

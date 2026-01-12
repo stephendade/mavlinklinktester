@@ -46,17 +46,8 @@ class MAVConnection(asyncio.Protocol):
         self.heartbeat_received = False
         self.server = False
 
-        # BW measures for RX, per sysid
-        # bytes and time(sec) in measurement period
-        self.bytesmeasure = (0, time.time())
-        self.bytespersecond = 0
-
         self.callback = rxcallback
         self.closecallback = clcallback
-
-        # Loss % per sysid
-
-        # BW measures for TX, per sysid
 
         self.name = name
 
@@ -104,20 +95,6 @@ class MAVConnection(asyncio.Protocol):
     def send_data(self, data: bytes) -> None:
         """Send data - implemented by subclasses."""
         raise NotImplementedError('Subclasses must implement send_data')
-
-    def updatebandwidth(self, bytelen):
-        """
-        Update the bandwidth (bytes/sec) measurement by
-        taking in the number of new bytes recieved,
-        every 5 seconds
-        """
-        (bytesi, timei) = self.bytesmeasure
-        if time.time() - timei > 5:
-            # do an update if 5 seconds since last BW update
-            self.bytespersecond = int(bytesi / (time.time() - timei))
-            self.bytesmeasure = (bytelen, time.time())
-        else:
-            self.bytesmeasure = (bytesi + bytelen, timei)
 
     def sendPacket(self, pktType: str, **kwargs):
         """
