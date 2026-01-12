@@ -1,4 +1,4 @@
-# MAVLink Link Tester
+# The MAVLink Link Loss and Latency Tester (MAVLink Link Tester)
 
 A professional tool for characterizing the reliability and latency of MAVLink connections. Tests multiple MAVLink links simultaneously for packet loss, latency, and outages.
 

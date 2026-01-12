@@ -1,5 +1,5 @@
 """
-The MAVLink Link Loss and Latency Tester (mave2e)
+The MAVLink Link Loss and Latency Tester (mavlinklinktester)
 Copyright (C) 2026  Stephen Dade
 
 This program is free software: you can redistribute it and/or modify
@@ -15,7 +15,7 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-Module for defining udp connections to mavlink
+Module for defining UDP connections to MAVLink
 """
 import logging
 from typing import Any, Optional, Tuple

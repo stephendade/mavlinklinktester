@@ -1,8 +1,6 @@
-#!/usr/bin/env python3
 """
-The Python-async Ground Station (PaGS), a mavlink ground station for
-autonomous vehicles.
-Copyright (C) 2019  Stephen Dade
+The MAVLink Link Loss and Latency Tester (mavlinklinktester)
+Copyright (C) 2026  Stephen Dade
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
