@@ -103,7 +103,7 @@ class TestHistogramGenerator:
         generator.add_latency_sample(15)   # 0-20ms bin
         generator.add_latency_sample(25)   # 20-40ms bin
         generator.add_latency_sample(150)  # 140-160ms bin
-        generator.add_latency_sample(2500) # >2000ms bin
+        generator.add_latency_sample(2500)  # >2000ms bin
 
         distribution = generator._calculate_latency_distribution()
 

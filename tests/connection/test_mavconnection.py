@@ -241,7 +241,6 @@ class TestMAVConnection:
 
     def test_bandwidth_tracking(self, connection):
         """Test bandwidth measurement."""
-        initial_bw = connection.bytespersecond
 
         # Simulate receiving some data
         connection.updatebandwidth(1000)

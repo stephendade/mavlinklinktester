@@ -16,15 +16,14 @@ GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
-"""
 
-'''UDPLink tests
+UDPLink tests
 
 Can send and recieve data (client/server)
 
 If a link fails (disconnected) the link should not crash.
 
-'''
+"""
 
 import asyncio
 import pytest
@@ -77,9 +76,9 @@ class TestUDPLink:
                                target_system=0, target_component=0)
         loop = asyncio.get_event_loop()
         await loop.create_datagram_endpoint(lambda: server,
-                                                 local_addr=(self.ip, self.port))
+                                            local_addr=(self.ip, self.port))
         await loop.create_datagram_endpoint(lambda: client,
-                                                 remote_addr=(self.ip, self.port))
+                                            remote_addr=(self.ip, self.port))
 
         # send a mavlink packet each way:
         pkt = self.mod.MAVLink_heartbeat_message(
@@ -110,7 +109,7 @@ class TestUDPLink:
 
         loop = asyncio.get_event_loop()
         await loop.create_datagram_endpoint(lambda: server,
-                                                 local_addr=(self.ip, self.port))
+                                            local_addr=(self.ip, self.port))
 
         # send a mavlink packet:
         pkt = self.mod.MAVLink_heartbeat_message(
@@ -136,7 +135,7 @@ class TestUDPLink:
         loop = asyncio.get_event_loop()
         try:
             await loop.create_datagram_endpoint(lambda: client,
-                                                     remote_addr=(self.ip, self.port))
+                                                remote_addr=(self.ip, self.port))
         except ConnectionRefusedError:
             pass  # This is the exception we want
 
@@ -168,9 +167,9 @@ class TestUDPLink:
 
         loop = asyncio.get_event_loop()
         await loop.create_datagram_endpoint(lambda: server,
-                                                 local_addr=(self.ip, self.port))
+                                            local_addr=(self.ip, self.port))
         await loop.create_datagram_endpoint(lambda: client,
-                                                 remote_addr=(self.ip, self.port))
+                                            remote_addr=(self.ip, self.port))
 
         # wait for 0.10 sec
         await asyncio.sleep(0.10)

@@ -18,6 +18,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 Module for defining udp connections to mavlink
 """
 import logging
+from typing import Any, Optional, Tuple
 
 from .mavconnection import MAVConnection
 
@@ -35,10 +36,10 @@ class UDPConnection(MAVConnection):
                                target_system, target_component,
                                clcallback, signing_key)
         self.server = server
-        self.transport = None
+        self.transport: Any = None
 
         if self.server:
-            self.addr = None
+            self.addr: Optional[Tuple[str, int]] = None
         else:
             self.addr = (name.split(':')[1], int(name.split(':')[2]))
 
@@ -56,6 +57,9 @@ class UDPConnection(MAVConnection):
         """Send a buffer of bytes to the other side of the link"""
         try:
             logging.debug("Tx packet %s", self.name)
+            if self.transport is None:
+                logging.debug("No transport to tx to %s", self.name)
+                return
             if self.server:
                 # Server mode: send to the last known client address
                 if self.addr:
@@ -71,5 +75,5 @@ class UDPConnection(MAVConnection):
                 self.closecallback(self.name)
 
     def close(self):
-        if self.transport:
+        if self.transport is not None:
             self.transport.close()

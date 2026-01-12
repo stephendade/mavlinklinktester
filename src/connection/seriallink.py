@@ -18,6 +18,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 Module for defining udp connections to mavlink
 """
 import fnmatch
+from typing import Any
 
 from .mavconnection import MAVConnection
 
@@ -36,7 +37,7 @@ class SerialConnection(MAVConnection):
                                srcsystem, srccomp, rxcallback, link_id,
                                target_system, target_component,
                                clcallback, signing_key)
-        self.transport = None
+        self.transport: Any = None
 
     def connection_made(self, transport):
         self.transport = transport
@@ -50,7 +51,7 @@ class SerialConnection(MAVConnection):
             self.transport.write(data)
 
     def close(self):
-        if self.transport:
+        if self.transport is not None:
             self.transport.close()
 
 
@@ -76,7 +77,7 @@ def findserial():
     ports = list(serial.tools.list_ports.comports())
     for port, description, hwid in ports:
         for preferred in serial_list:
-            if (fnmatch.fnmatch(description.lower(), preferred.lower()) or
-                    fnmatch.fnmatch(hwid.lower(), preferred.lower())):
+            if (fnmatch.fnmatch(description.lower(), preferred.lower())
+                    or fnmatch.fnmatch(hwid.lower(), preferred.lower())):
                 ret_list.append(port)
     return ret_list

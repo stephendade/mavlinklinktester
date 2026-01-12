@@ -16,15 +16,14 @@ GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
-"""
 
-'''TCPLink tests
+TCPLink tests
 
 Can send and recieve data (client/server)
 
 If a link fails (disconnected) the link should not crash.
 
-'''
+"""
 
 import asyncio
 import pytest
@@ -134,8 +133,8 @@ class TestTCPLink:
         loop = asyncio.get_event_loop()
         try:
             await loop.create_connection(lambda: client,
-                                              self.ip,
-                                              self.port)
+                                         self.ip,
+                                         self.port)
         except ConnectionRefusedError:
             pass  # This is the exception we want
 

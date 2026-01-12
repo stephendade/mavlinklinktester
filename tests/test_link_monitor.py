@@ -197,9 +197,6 @@ class TestLinkMonitor:
         monitor._check_outage()
         assert monitor.in_outage is True
 
-        # Receive packets (recovery hysteresis = 3)
-        current_time = time.time()
-
         # First packet - still in outage
         monitor._update_packet_time()
         assert monitor.in_outage is True

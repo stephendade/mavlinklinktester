@@ -10,6 +10,7 @@ import logging
 import os
 import time
 from datetime import datetime
+from typing import Optional, Union
 
 import serial_asyncio
 
@@ -39,7 +40,7 @@ class LinkMonitor:
         self.signing_link_id = signing_link_id
 
         # MAVConnection instance
-        self.connection = None
+        self.connection: Optional[Union[UDPConnection, TCPConnection, SerialConnection]] = None
         self.connection_type = None  # 'udpout', 'udpin', 'tcp', or 'serial'
         self.heartbeat_received = False
 
@@ -140,7 +141,7 @@ class LinkMonitor:
                 self.connection_type = 'udpout'
 
                 # Create UDP connection (client mode)
-                self.connection = UDPConnection(
+                udp_conn = UDPConnection(
                     dialect='ardupilotmega',
                     mavversion=2.0,
                     name=conn_str,
@@ -154,10 +155,11 @@ class LinkMonitor:
                     target_system=self.target_system,
                     target_component=self.target_component
                 )
+                self.connection = udp_conn
 
                 # Create datagram endpoint
                 await loop.create_datagram_endpoint(
-                    lambda: self.connection,
+                    lambda: udp_conn,
                     remote_addr=(host, port)
                 )
 
@@ -173,7 +175,7 @@ class LinkMonitor:
                 self.connection_type = 'udpin'
 
                 # Create UDP connection (server mode)
-                self.connection = UDPConnection(
+                udpin_conn = UDPConnection(
                     dialect='ardupilotmega',
                     mavversion=2.0,
                     name=conn_str,
@@ -187,6 +189,7 @@ class LinkMonitor:
                     target_system=self.target_system,
                     target_component=self.target_component
                 )
+                self.connection = udpin_conn
 
                 # Bind to local address
                 await loop.create_datagram_endpoint(
@@ -206,7 +209,7 @@ class LinkMonitor:
                 self.connection_type = 'tcp'
 
                 # Create TCP connection
-                self.connection = TCPConnection(
+                tcp_conn = TCPConnection(
                     dialect='ardupilotmega',
                     mavversion=2.0,
                     name=conn_str,
@@ -220,10 +223,11 @@ class LinkMonitor:
                     target_system=self.target_system,
                     target_component=self.target_component
                 )
+                self.connection = tcp_conn
 
                 # Create TCP connection
                 await loop.create_connection(
-                    lambda: self.connection,
+                    lambda: tcp_conn,
                     host, port
                 )
 
@@ -446,12 +450,12 @@ class LinkMonitor:
 
         # Generate histogram
         logging.info('[%s] Generating histogram...', self.link_id)
-        
+
         # Set the actual elapsed time in the histogram
         if self.start_time:
             actual_elapsed = time.time() - self.start_time
             self.histogram.total_seconds = int(round(actual_elapsed))
-        
+
         histogram_path = self.histogram.generate_histogram()
 
         # Print final summary
@@ -489,11 +493,12 @@ class LinkMonitor:
                     self.sent_timestamps.pop(0)
 
                 # Send TIMESYNC message (tc1=0, ts1=our timestamp)
-                self.connection.sendPacket(
-                    'TIMESYNC',
-                    tc1=0,      # tc1 (not used in basic implementation)
-                    ts1=now_ns  # ts1 = our timestamp
-                )
+                if self.connection is not None:
+                    self.connection.sendPacket(
+                        'TIMESYNC',
+                        tc1=0,      # tc1 (not used in basic implementation)
+                        ts1=now_ns  # ts1 = our timestamp
+                    )
 
                 await asyncio.sleep(1.0)  # Send TIMESYNC every second
             except asyncio.CancelledError:
@@ -508,7 +513,8 @@ class LinkMonitor:
         """Send HEARTBEAT messages at 1Hz to maintain the connection."""
         while self.running:
             try:
-                await self.connection.send_heartbeat()
+                if self.connection is not None:
+                    await self.connection.send_heartbeat()
                 await asyncio.sleep(1.0)  # Send HEARTBEAT every second
             except asyncio.CancelledError:
                 break
@@ -534,16 +540,18 @@ class LinkMonitor:
                 elapsed = time.time() - self.start_time
 
                 # Write current metrics
-                self.csv_writer.writerow([
-                    int(round(elapsed)),
-                    self.current_total_packets,
-                    self.current_dropped_packets,
-                    int(round(self.current_latency_ms)),
-                    self.current_bad_order_packets,
-                    self.current_bytes,
-                    1 if self.current_outage else 0
-                ])
-                self.csv_file.flush()
+                if self.csv_writer is not None:
+                    self.csv_writer.writerow([
+                        int(round(elapsed)),
+                        self.current_total_packets,
+                        self.current_dropped_packets,
+                        int(round(self.current_latency_ms)),
+                        self.current_bad_order_packets,
+                        self.current_bytes,
+                        1 if self.current_outage else 0
+                    ])
+                if self.csv_file is not None:
+                    self.csv_file.flush()
 
                 # Update histogram
                 self.histogram.add_drops_per_sec_sample(self.current_dropped_packets)

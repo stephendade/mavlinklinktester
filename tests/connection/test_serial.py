@@ -13,12 +13,12 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
-"""
 
-'''TCPLink tests
+
+Serial tests
 Can send and recieve data (client/server)
 If a link fails (disconnected) the link should not crash.
-'''
+"""
 
 import asyncio
 import pytest
@@ -68,9 +68,9 @@ class TestSerialLink:
             self, srcSystem=0, srcComponent=0, use_native=False)
         self.cnum = 0
         self.snum = 0
-        
+
         yield
-        
+
         # Teardown
         if self.serialServer:
             self.serialServer.terminate()

@@ -11,7 +11,7 @@ class HistogramGenerator:
     """Generates histogram CSV files from collected link statistics."""
 
     # Latency bins: 20ms intervals from 0 to 2000ms, plus >2000ms
-    LATENCY_BINS = [(i, i+20) for i in range(0, 2000, 20)] + [(2000, float('inf'))]
+    LATENCY_BINS = [(i, i + 20) for i in range(0, 2000, 20)] + [(2000, float('inf'))]
 
     def __init__(self, link_id, sanitized_connection, output_dir):
         self.link_id = link_id

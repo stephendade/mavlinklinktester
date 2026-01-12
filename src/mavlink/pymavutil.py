@@ -20,7 +20,7 @@ Module to hold helper functions for interfacing with the pymavlink library
 from importlib import import_module
 
 
-def getpymavlinkpackage(dialect: str, version: float) -> str:
+def getpymavlinkpackage(dialect: str, version: float):
     """
     Return an import to the specified mavlink dialect and version
     """

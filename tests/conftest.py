@@ -91,7 +91,7 @@ def sample_connection_strings():
 def mock_mavlink_connection():
     """Mock MAVConnection for testing."""
     from src.connection.mavconnection import MAVConnection
-    
+
     conn = Mock(spec=MAVConnection)
     conn.name = 'mock_connection'
     conn.heartbeat_received = False
@@ -100,7 +100,7 @@ def mock_mavlink_connection():
     conn.configure_stream_rates = Mock()
     conn.wait_for_heartbeat = Mock(return_value=True)
     conn.close = Mock()
-    
+
     return conn
 
 
@@ -108,12 +108,12 @@ def mock_mavlink_connection():
 def mock_histogram_generator():
     """Mock HistogramGenerator for testing."""
     from src.histogram_generator import HistogramGenerator
-    
+
     gen = Mock(spec=HistogramGenerator)
     gen.add_latency_sample = Mock()
     gen.add_drops_per_sec_sample = Mock()
     gen.record_outage_event = Mock()
     gen.increment_total_seconds = Mock()
     gen.generate_histogram = Mock(return_value='/tmp/test_histogram.csv')
-    
+
     return gen

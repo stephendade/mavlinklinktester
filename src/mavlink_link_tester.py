@@ -36,7 +36,9 @@ class MAVLinkTester:
         # Set up signal handlers for async
         try:
             for sig in (signal.SIGINT, signal.SIGTERM):
-                self.loop.add_signal_handler(sig, lambda s=sig: self._signal_handler(s))
+                def make_handler(signal_num: int):
+                    return lambda: self._signal_handler(signal_num)
+                self.loop.add_signal_handler(sig, make_handler(sig))
         except NotImplementedError:
             # On Windows, add_signal_handler is not implemented
             # Signal handling will work via KeyboardInterrupt exception
@@ -125,16 +127,16 @@ class MAVLinkTester:
         self.stopping = True
         self.running = False
 
-        logging.info('='*80)
+        logging.info('=' * 80)
         logging.info('Stopping monitors and generating reports...')
-        logging.info('='*80)
+        logging.info('=' * 80)
 
         # Stop all monitors concurrently
         stop_tasks = [monitor.stop() for monitor in self.monitors]
         histogram_paths = await asyncio.gather(*stop_tasks, return_exceptions=True)
 
         # Print summary
-        logging.info('='*80)
+        logging.info('=' * 80)
         logging.info('Total links tested: %s', len(self.monitors))
         logging.info('Generated files:')
         for monitor in self.monitors:

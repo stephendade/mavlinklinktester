@@ -19,7 +19,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 Subclass for managing MAVLink connections
 """
 import asyncio
-import collections
 import logging
 import time
 
@@ -60,7 +59,7 @@ class MAVConnection(asyncio.Protocol):
         # BW measures for TX, per sysid
 
         self.name = name
-        
+
         # Set up MAVLink signing if configured
         if signing_key is not None:
             import hashlib
@@ -103,8 +102,8 @@ class MAVConnection(asyncio.Protocol):
             self.closecallback(self.name)
 
     def send_data(self, data: bytes) -> None:
-        """Send data across the link"""
-        raise NotImplementedError
+        """Send data - implemented by subclasses."""
+        raise NotImplementedError('Subclasses must implement send_data')
 
     def updatebandwidth(self, bytelen):
         """
@@ -141,11 +140,8 @@ class MAVConnection(asyncio.Protocol):
         self.mav.total_packets_sent += 1
         self.mav.total_bytes_sent += len(buf)
 
-        if self.send_data is not None:
-            logging.debug('GCS sending %s', pkt.get_type())
-            self.send_data(buf)
-        else:
-            logging.debug('GCS can\'t send')
+        logging.debug('GCS sending %s', pkt.get_type())
+        self.send_data(buf)
 
         # return the packed bytes for reference
         return buf
@@ -194,7 +190,7 @@ class MAVConnection(asyncio.Protocol):
         """Wait for heartbeat from target system/component."""
         start_time = time.time()
         timeout = 10.0
-        last_heartbeat_sent = 0
+        last_heartbeat_sent = 0.0
 
         # Store heartbeat flag
         self.heartbeat_received = False
@@ -205,7 +201,7 @@ class MAVConnection(asyncio.Protocol):
             if not self.server:
                 current_time = time.time()
                 if current_time - last_heartbeat_sent >= 1.0:
-                    logging.info("[%s] Sending HEARTBEAT to target...", self.link_id)
+                    logging.info('[%s] Sending HEARTBEAT to target...', self.link_id)
                     await self.send_heartbeat()
                     last_heartbeat_sent = current_time
 

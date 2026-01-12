@@ -19,6 +19,7 @@ Module for defining tcp connections to mavlink
 """
 import logging
 import socket
+from typing import Any
 
 from .mavconnection import MAVConnection
 
@@ -36,13 +37,14 @@ class TCPConnection(MAVConnection):
                                target_system, target_component,
                                clcallback, signing_key)
         self.server = server
-        self.transport = None
+        self.transport: Any = None
 
     def connection_made(self, transport) -> None:
         logging.debug('Connection made %s', self.name)
         self.transport = transport
-        sock = self.transport.get_extra_info('socket')
-        sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
+        if self.transport is not None:
+            sock = self.transport.get_extra_info('socket')
+            sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
 
     def data_received(self, data) -> None:
         logging.debug('Rx packet %s', self.name)
@@ -51,6 +53,11 @@ class TCPConnection(MAVConnection):
     def send_data(self, data: bytes) -> None:
         """Send a bytes through the link"""
         try:
+            if self.transport is None:
+                logging.debug('Tx send error (no transport) %s', self.name)
+                if self.closecallback is not None:
+                    self.closecallback(self.name)
+                return
             self.transport.write(data)
             logging.debug('Tx packet %s', self.name)
         except AttributeError:
@@ -61,5 +68,5 @@ class TCPConnection(MAVConnection):
             return
 
     def close(self):
-        if self.transport:
+        if self.transport is not None:
             self.transport.close()
