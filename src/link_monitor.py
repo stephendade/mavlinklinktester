@@ -171,13 +171,14 @@ class LinkMonitor:
                     target_system=self.target_system,
                     target_component=self.target_component
                 )
-                self.connection = udp_conn
 
                 # Create datagram endpoint
                 await loop.create_datagram_endpoint(
                     lambda: udp_conn,
                     remote_addr=(host, port)
                 )
+
+                self.connection = udp_conn
 
             elif conn_str.startswith('udpin:'):
                 # UDP input format: udpin:bind_address:port
@@ -205,13 +206,14 @@ class LinkMonitor:
                     target_system=self.target_system,
                     target_component=self.target_component
                 )
-                self.connection = udpin_conn
 
                 # Bind to local address
                 await loop.create_datagram_endpoint(
-                    lambda: self.connection,
+                    lambda: udpin_conn,
                     local_addr=(bind_addr, port)
                 )
+
+                self.connection = udpin_conn
 
             elif conn_str.startswith('tcp:'):
                 # TCP format: tcp:host:port
@@ -239,13 +241,14 @@ class LinkMonitor:
                     target_system=self.target_system,
                     target_component=self.target_component
                 )
-                self.connection = tcp_conn
 
                 # Create TCP connection
                 await loop.create_connection(
                     lambda: tcp_conn,
                     host, port
                 )
+
+                self.connection = tcp_conn
 
             elif conn_str.startswith('/dev/'):
                 # Serial port format: /dev/ttyXXX:baudrate
