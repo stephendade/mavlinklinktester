@@ -39,6 +39,7 @@ class TestMAVLinkTester:
         args.outage_timeout = 1.0
         args.recovery_hysteresis = 3
         args.output_dir = temp_output_dir
+        args.all_rates = 4
         args.rate_raw_sensors = 4
         args.rate_extended_status = 4
         args.rate_rc_channels = 4
@@ -102,6 +103,7 @@ class TestMAVLinkTester:
         args.outage_timeout = 1.0
         args.recovery_hysteresis = 3
         args.output_dir = temp_output_dir
+        args.all_rates = 4
         args.rate_raw_sensors = 4
         args.rate_extended_status = 4
         args.rate_rc_channels = 4
@@ -141,6 +143,7 @@ class TestMAVLinkTester:
         args.outage_timeout = 1.0
         args.recovery_hysteresis = 3
         args.output_dir = temp_output_dir
+        args.all_rates = 4
         args.rate_raw_sensors = 4
         args.rate_extended_status = 4
         args.rate_rc_channels = 4
@@ -230,6 +233,7 @@ class TestMAVLinkTester:
         args.outage_timeout = 1.0
         args.recovery_hysteresis = 3
         args.output_dir = temp_output_dir
+        args.all_rates = -1
         args.rate_raw_sensors = 10
         args.rate_extended_status = 5
         args.rate_rc_channels = 8

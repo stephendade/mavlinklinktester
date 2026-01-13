@@ -58,6 +58,16 @@ class MAVLinkTester:
             # Signal handling will work via KeyboardInterrupt exception
             pass
 
+        # If --all-rates is set, override individual rates
+        if self.args.all_rates != -1:
+            self.args.rate_raw_sensors = self.args.all_rates
+            self.args.rate_extended_status = self.args.all_rates
+            self.args.rate_rc_channels = self.args.all_rates
+            self.args.rate_position = self.args.all_rates
+            self.args.rate_extra1 = self.args.all_rates
+            self.args.rate_extra2 = self.args.all_rates
+            self.args.rate_extra3 = self.args.all_rates
+
         logging.info('MAVLink Link Tester')
         logging.info('Target: System %s, Component %s', self.args.system_id, self.args.component_id)
         logging.info('Links: %s', len(self.args.connections))
@@ -186,7 +196,7 @@ Examples:
   %(prog)s --system-id 1 --component-id 1 /dev/ttyUSB0:57600
 
   # Test with stream rates enabled
-  %(prog)s --system-id 1 --component-id 1 --rate-raw-sensors 10 --rate-position 5 /dev/ttyACM0:115200
+  %(prog)s --system-id 1 --component-id 1 --all-rates 4 /dev/ttyACM0:115200
 
   # Test with MAVLink 2.0 signing enabled
   %(prog)s --system-id 1 --component-id 1 --signing-passphrase mysecretkey /dev/ttyACM0:115200
@@ -215,6 +225,9 @@ Examples:
                         help='Output directory for CSV files (default: output)')
 
     # Stream rate control arguments
+    parser.add_argument('--all-rates', type=int, default=4,
+                        help='Set all stream rates in Hz (-1 to use individual rates)')
+
     parser.add_argument('--rate-raw-sensors', type=int, default=4,
                         help='RAW_SENSORS stream rate in Hz (default: 4)')
 

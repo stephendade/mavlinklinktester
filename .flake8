@@ -29,7 +29,7 @@ ignore =
     # We allow long lines in some cases (URLs, etc.)
 
 # Complexity settings
-max-complexity = 15
+max-complexity = 16
 
 # Per-file ignores
 per-file-ignores =

@@ -78,6 +78,14 @@ poetry run python -m src.mavlink_link_tester --system-id 1 --component-id 1 \
 **Test with custom stream rates:**
 ```bash
 poetry run python -m src.mavlink_link_tester --system-id 1 --component-id 1 \
+  --all-rates 4 \
+  /dev/ttyACM0:115200
+```
+
+**Test with custom individual stream rates:**
+```bash
+poetry run python -m src.mavlink_link_tester --system-id 1 --component-id 1 \
+  --all-rates -1 \
   --rate-raw-sensors 10 \
   --rate-position 5 \
   /dev/ttyACM0:115200
