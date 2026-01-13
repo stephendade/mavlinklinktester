@@ -25,7 +25,7 @@ import logging
 import signal
 import time
 
-from src.link_monitor import LinkMonitor
+from mavlinklinktester.link_monitor import LinkMonitor
 
 
 class MAVLinkTester:

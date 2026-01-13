@@ -21,7 +21,7 @@ Tests latency binning, drop distribution, and CSV generation.
 import pytest
 import os
 import csv
-from src.histogram_generator import HistogramGenerator
+from mavlinklinktester.histogram_generator import HistogramGenerator
 
 
 class TestHistogramGenerator:

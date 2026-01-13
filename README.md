@@ -26,11 +26,19 @@ A professional tool for characterizing the reliability and latency of MAVLink co
 git clone https://github.com/stephendade/mavlinklinktester.git
 cd mavlinklinktester
 
-# Install dependencies
-poetry install --no-root
+# Install package
+pip install -e .
 
-# For development (includes testing and code quality tools)
-poetry install --with dev --no-root
+```
+
+If developing, use poetry to manage the environment:
+
+```bash
+# Install dependencies with Poetry
+poetry install
+
+# For development with testing and code quality tools
+poetry install --with dev
 ```
 
 ## Usage
@@ -38,8 +46,10 @@ poetry install --with dev --no-root
 ### Basic Usage
 
 ```bash
-poetry run python -m src.mavlink_link_tester --system-id 1 --component-id 1 <CONNECTION>
+mavlink-link-tester.py --system-id 1 --component-id 1 <CONNECTION>
 ```
+
+If working within a Poetry development environment, use ``poetry run mavlink-link-tester.py ...`` instead
 
 ### Connection Strings
 
@@ -52,39 +62,39 @@ poetry run python -m src.mavlink_link_tester --system-id 1 --component-id 1 <CON
 
 **Test single UDP link:**
 ```bash
-poetry run python -m src.mavlink_link_tester --system-id 1 --component-id 1 udpin:0.0.0.0:14550
+mavlink-link-tester.py --system-id 1 --component-id 1 udpin:0.0.0.0:14550
 ```
 
 **Test multiple links simultaneously:**
 ```bash
-poetry run python -m src.mavlink_link_tester --system-id 1 --component-id 1 \
+mavlink-link-tester.py --system-id 1 --component-id 1 \
   udpin:0.0.0.0:14550 \
   udpout:192.168.1.100:14551
 ```
 
 **Test with custom duration:**
 ```bash
-poetry run python -m src.mavlink_link_tester --system-id 1 --component-id 1 \
+mavlink-link-tester.py --system-id 1 --component-id 1 \
   --duration 300 \
   udpin:0.0.0.0:14550
 ```
 
 **Test serial connection:**
 ```bash
-poetry run python -m src.mavlink_link_tester --system-id 1 --component-id 1 \
+mavlink-link-tester.py --system-id 1 --component-id 1 \
   /dev/ttyUSB0:57600
 ```
 
 **Test with custom stream rates:**
 ```bash
-poetry run python -m src.mavlink_link_tester --system-id 1 --component-id 1 \
+mavlink-link-tester.py --system-id 1 --component-id 1 \
   --all-rates 4 \
   /dev/ttyACM0:115200
 ```
 
 **Test with custom individual stream rates:**
 ```bash
-poetry run python -m src.mavlink_link_tester --system-id 1 --component-id 1 \
+mavlink-link-tester.py --system-id 1 --component-id 1 \
   --all-rates -1 \
   --rate-raw-sensors 10 \
   --rate-position 5 \
@@ -93,7 +103,7 @@ poetry run python -m src.mavlink_link_tester --system-id 1 --component-id 1 \
 
 **Test with MAVLink 2.0 signing:**
 ```bash
-poetry run python -m src.mavlink_link_tester --system-id 1 --component-id 1 \
+mavlink-link-tester.py --system-id 1 --component-id 1 \
   --signing-passphrase mysecretkey \
   udpin:0.0.0.0:14550
 ```
@@ -169,10 +179,10 @@ The project uses flake8 for linting and mypy for type checking:
 
 ```bash
 # Run linting
-poetry run flake8 src/ tests/
+poetry run flake8 mavlinklinktester/ tests/
 
 # Run type checking
-poetry run mypy src/
+poetry run mypy mavlinklinktester/
 ```
 
 ## License

@@ -22,8 +22,8 @@ import pytest
 import asyncio
 import time
 from unittest.mock import Mock, patch, MagicMock
-from src.connection.mavconnection import MAVConnection
-from src.mavlink.pymavutil import getpymavlinkpackage
+from mavlinklinktester.connection.mavconnection import MAVConnection
+from mavlinklinktester.mavlink.pymavutil import getpymavlinkpackage
 
 
 class TestMAVConnection:

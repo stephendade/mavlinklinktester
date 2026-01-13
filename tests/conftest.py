@@ -21,7 +21,7 @@ import pytest
 import tempfile
 import os
 from unittest.mock import Mock, MagicMock
-from src.mavlink.pymavutil import getpymavlinkpackage
+from mavlinklinktester.mavlink.pymavutil import getpymavlinkpackage
 
 
 @pytest.fixture
@@ -106,7 +106,7 @@ def sample_connection_strings():
 @pytest.fixture
 def mock_mavlink_connection():
     """Mock MAVConnection for testing."""
-    from src.connection.mavconnection import MAVConnection
+    from mavlinklinktester.connection.mavconnection import MAVConnection
 
     conn = Mock(spec=MAVConnection)
     conn.name = 'mock_connection'
@@ -123,7 +123,7 @@ def mock_mavlink_connection():
 @pytest.fixture
 def mock_histogram_generator():
     """Mock HistogramGenerator for testing."""
-    from src.histogram_generator import HistogramGenerator
+    from mavlinklinktester.histogram_generator import HistogramGenerator
 
     gen = Mock(spec=HistogramGenerator)
     gen.add_latency_sample = Mock()

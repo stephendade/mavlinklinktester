@@ -26,8 +26,8 @@ If a link fails (disconnected) the link should not crash.
 import asyncio
 import pytest
 
-from src.connection.tcplink import TCPConnection
-from src.mavlink.pymavutil import getpymavlinkpackage
+from mavlinklinktester.connection.tcplink import TCPConnection
+from mavlinklinktester.mavlink.pymavutil import getpymavlinkpackage
 
 
 class TestTCPLink:

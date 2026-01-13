@@ -6,11 +6,11 @@ authors = [{ name = "Stephen Dade", email = "stephen_dade@hotmail.com" }]
 maintainers = [{ name = "Stephen Dade", email = "stephen_dade@hotmail.com" }]
 license = "GPL-3.0-or-later"
 readme = "README.md"
-package-mode = false
 requires-python = ">=3.8.1"
 dependencies = [
-    "pymavlink (>=2.4.49,<3.0.0)",
-    "pyserial-asyncio (>=0.6,<0.7)"
+    "pymavlink>=2.4.49,<3.0.0",
+    "pyserial>=3.5,<4.0.0",
+    "pyserial-asyncio>=0.6,<0.7"
 ]
 
 [project.urls]
@@ -18,7 +18,7 @@ homepage = "https://github.com/stephendade/mavlinklinktester"
 repository = "https://github.com/stephendade/mavlinklinktester"
 
 [project.scripts]
-mavlink-link-tester = "mavlink_link_tester:main"
+"mavlink-link-tester.py" = "mavlinklinktester.mavlink_link_tester:main"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.0"

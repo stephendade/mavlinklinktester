@@ -22,7 +22,7 @@ if that dialet does not exist
 
 import pytest
 
-from src.mavlink.pymavutil import getpymavlinkpackage
+from mavlinklinktester.mavlink.pymavutil import getpymavlinkpackage
 
 
 class TestGetpymavlinkpackage:

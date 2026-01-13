@@ -30,10 +30,10 @@ from typing import Optional, Union
 
 import serial_asyncio
 
-from src.connection.seriallink import SerialConnection
-from src.connection.tcplink import TCPConnection
-from src.connection.udplink import UDPConnection
-from src.histogram_generator import HistogramGenerator
+from mavlinklinktester.connection.seriallink import SerialConnection
+from mavlinklinktester.connection.tcplink import TCPConnection
+from mavlinklinktester.connection.udplink import UDPConnection
+from mavlinklinktester.histogram_generator import HistogramGenerator
 
 
 class LinkMonitor:

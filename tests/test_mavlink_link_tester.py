@@ -21,7 +21,7 @@ Tests multi-monitor management, signal handling, and overall orchestration.
 import pytest
 import asyncio
 from unittest.mock import Mock, patch, AsyncMock, MagicMock
-from src.mavlink_link_tester import MAVLinkTester
+from mavlinklinktester.mavlink_link_tester import MAVLinkTester
 import argparse
 
 
@@ -76,7 +76,7 @@ class TestMAVLinkTester:
         tester = MAVLinkTester(basic_args)
 
         # Mock LinkMonitor.start to return True immediately
-        with patch('src.mavlink_link_tester.LinkMonitor') as MockLinkMonitor:
+        with patch('mavlinklinktester.mavlink_link_tester.LinkMonitor') as MockLinkMonitor:
             mock_monitor = AsyncMock()
             mock_monitor.start = AsyncMock(return_value=True)
             mock_monitor.stop = AsyncMock(return_value='/tmp/test_histogram.csv')
@@ -116,7 +116,7 @@ class TestMAVLinkTester:
 
         tester = MAVLinkTester(args)
 
-        with patch('src.mavlink_link_tester.LinkMonitor') as MockLinkMonitor:
+        with patch('mavlinklinktester.mavlink_link_tester.LinkMonitor') as MockLinkMonitor:
             mock_monitor = AsyncMock()
             mock_monitor.start = AsyncMock(return_value=True)
             mock_monitor.stop = AsyncMock(return_value='/tmp/test_histogram.csv')
@@ -156,7 +156,7 @@ class TestMAVLinkTester:
 
         tester = MAVLinkTester(args)
 
-        with patch('src.mavlink_link_tester.LinkMonitor') as MockLinkMonitor:
+        with patch('mavlinklinktester.mavlink_link_tester.LinkMonitor') as MockLinkMonitor:
             mock_monitor = AsyncMock()
             mock_monitor.start = AsyncMock(return_value=True)
             mock_monitor.stop = AsyncMock(return_value='/tmp/test_histogram.csv')
@@ -176,7 +176,7 @@ class TestMAVLinkTester:
         """Test handling of failed monitor start."""
         tester = MAVLinkTester(basic_args)
 
-        with patch('src.mavlink_link_tester.LinkMonitor') as MockLinkMonitor:
+        with patch('mavlinklinktester.mavlink_link_tester.LinkMonitor') as MockLinkMonitor:
             mock_monitor = AsyncMock()
             mock_monitor.start = AsyncMock(return_value=False)  # Simulate failure
             MockLinkMonitor.return_value = mock_monitor
@@ -286,7 +286,7 @@ class TestMAVLinkTester:
         """Test handling of KeyboardInterrupt."""
         tester = MAVLinkTester(basic_args)
 
-        with patch('src.mavlink_link_tester.LinkMonitor') as MockLinkMonitor:
+        with patch('mavlinklinktester.mavlink_link_tester.LinkMonitor') as MockLinkMonitor:
             mock_monitor = AsyncMock()
             mock_monitor.start = AsyncMock(return_value=True)
             mock_monitor.stop = AsyncMock(return_value='/tmp/test_histogram.csv')
@@ -311,7 +311,7 @@ class TestMAVLinkTester:
         """Test behavior when no monitors start successfully."""
         tester = MAVLinkTester(basic_args)
 
-        with patch('src.mavlink_link_tester.LinkMonitor') as MockLinkMonitor:
+        with patch('mavlinklinktester.mavlink_link_tester.LinkMonitor') as MockLinkMonitor:
             mock_monitor = AsyncMock()
             mock_monitor.start = AsyncMock(return_value=False)  # All fail
             MockLinkMonitor.return_value = mock_monitor

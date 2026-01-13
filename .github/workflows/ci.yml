@@ -38,7 +38,7 @@ jobs:
       
       - name: Run flake8
         run: |
-          poetry run flake8 src/ tests/
+          poetry run flake8 mavlinklinktester/ tests/
 
   typecheck:
     name: Type check with mypy
@@ -71,7 +71,7 @@ jobs:
       
       - name: Run mypy
         run: |
-          poetry run mypy src/
+          poetry run mypy mavlinklinktester/
 
   test:
     name: Test Python ${{ matrix.python-version }}
@@ -122,4 +122,38 @@ jobs:
           path: |
             htmlcov/
             coverage.xml
+          retention-days: 30
+
+  build:
+    name: Build distribution packages
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck, test]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 2.2.1
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      
+      - name: Build package
+        run: poetry build
+      
+      - name: Verify package
+        run: |
+          pip install dist/*.whl
+          mavlink-link-tester.py --help
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
           retention-days: 30

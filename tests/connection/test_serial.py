@@ -25,9 +25,9 @@ import pytest
 import subprocess
 import serial_asyncio
 
-from src.connection.seriallink import SerialConnection
-from src.connection.tcplink import TCPConnection
-from src.mavlink.pymavutil import getpymavlinkpackage
+from mavlinklinktester.connection.seriallink import SerialConnection
+from mavlinklinktester.connection.tcplink import TCPConnection
+from mavlinklinktester.mavlink.pymavutil import getpymavlinkpackage
 
 
 class TestSerialLink:

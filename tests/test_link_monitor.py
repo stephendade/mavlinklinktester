@@ -22,7 +22,7 @@ import pytest
 import asyncio
 import time
 from unittest.mock import Mock, patch, AsyncMock, MagicMock
-from src.link_monitor import LinkMonitor
+from mavlinklinktester.link_monitor import LinkMonitor
 
 
 class TestLinkMonitor:
