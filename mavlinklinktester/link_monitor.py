@@ -528,8 +528,11 @@ class LinkMonitor:
         if self.latency_samples:
             mean_latency = sum(self.latency_samples) / len(self.latency_samples)
             logging.info('  Mean Latency: %.2fms', mean_latency)
+            median_latency = sorted(self.latency_samples)[len(self.latency_samples) // 2]
+            logging.info('  Median Latency: %.2fms', median_latency)
         else:
             logging.info('  Mean Latency: N/A')
+            logging.info('  Median Latency: N/A')
 
         return histogram_path
 
