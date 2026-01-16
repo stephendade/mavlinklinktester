@@ -250,6 +250,41 @@ class LinkMonitor:
 
                 self.connection = tcp_conn
 
+            elif conn_str.startswith('tcpin:'):
+                # TCP format: tcp:host:port
+                parts = conn_str.split(':')
+                if len(parts) != 3:
+                    raise ValueError(f'Invalid tcp format: {conn_str}')
+                host = parts[1]
+                port = int(parts[2])
+
+                logging.info('[%s] Creating TCP server on %s:%s', self.link_id, host, port)
+                self.connection_type = 'tcpin'
+
+                # Create TCP connection
+                tcp_conn = TCPConnection(
+                    dialect='ardupilotmega',
+                    mavversion=2.0,
+                    name=conn_str,
+                    srcsystem=255,
+                    srccomp=0,
+                    rxcallback=self._on_message_received,
+                    server=True,
+                    clcallback=self._on_connection_lost,
+                    signing_key=self.signing_key,
+                    link_id=self.signing_link_id if self.signing_link_id is not None else self.link_id,
+                    target_system=self.target_system,
+                    target_component=self.target_component
+                )
+
+                # Create TCP connection
+                await loop.create_server(
+                    lambda: tcp_conn,
+                    host, port
+                )
+
+                self.connection = tcp_conn
+
             elif conn_str.startswith('/dev/'):
                 # Serial port format: /dev/ttyXXX:baudrate
                 parts = conn_str.split(':')

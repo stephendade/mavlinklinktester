@@ -186,6 +186,9 @@ Examples:
   # Test single UDP link
   %(prog)s --system-id 1 --component-id 1 udp:127.0.0.1:14550
 
+  # Test single TCP server link
+  %(prog)s --system-id 1 --component-id 1 tcpin:127.0.0.1:14550
+
   # Test multiple links simultaneously
   %(prog)s --system-id 1 --component-id 1 udp:127.0.0.1:14550 udp:127.0.0.1:14551
 
