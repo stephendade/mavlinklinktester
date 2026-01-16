@@ -21,25 +21,33 @@ A professional tool for characterizing the reliability and latency of MAVLink co
 
 ### Setup
 
+**Option 1: Install to your system/active environment (recommended for users)**
+
 ```bash
 # Clone the repository
 git clone https://github.com/stephendade/mavlinklinktester.git
 cd mavlinklinktester
 
-# Install package
+# Install package to your current Python environment
+# This makes the mavlink-link-tester.py command available on your PATH
 pip install -e .
-
 ```
 
-If developing, use poetry to manage the environment:
+**Option 2: Use Poetry for development (recommended for developers)**
 
 ```bash
-# Install dependencies with Poetry
+# Clone the repository
+git clone https://github.com/stephendade/mavlinklinktester.git
+cd mavlinklinktester
+
+# Install dependencies with Poetry (creates isolated virtual environment)
 poetry install
 
 # For development with testing and code quality tools
 poetry install --with dev
 ```
+
+Note: With Poetry, the command is only available via `poetry run mavlink-link-tester.py` unless you also run `pip install -e .` in your system environment.
 
 ## Usage
 
@@ -55,7 +63,8 @@ If working within a Poetry development environment, use ``poetry run mavlink-lin
 
 - **UDP Input (Server)**: `udpin:0.0.0.0:14550` - Listen for incoming UDP connections
 - **UDP Output (Client)**: `udpout:192.168.1.100:14550` - Connect to remote UDP endpoint
-- **TCP**: `tcp:192.168.1.100:5760` - Connect to TCP endpoint
+- **TCP Client**: `tcp:192.168.1.100:5760` - Connect to TCP endpoint
+- **TCP Server**: `tcpin:192.168.1.100:5760` - Listen for incoming TCP connections
 - **Serial**: `/dev/ttyUSB0:57600` - Connect via serial port
 
 ### Examples
