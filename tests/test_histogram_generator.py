@@ -42,8 +42,6 @@ class TestHistogramGenerator:
         assert generator.sanitized_connection == 'udpin_0_0_0_0_14550'
         assert generator.output_dir == temp_output_dir
         assert len(generator.latency_samples) == 0
-        assert len(generator.drops_per_sec_samples) == 0
-        assert len(generator.outage_events) == 0
         assert generator.total_seconds == 0
 
     def test_latency_bins_definition(self):
@@ -82,25 +80,6 @@ class TestHistogramGenerator:
         assert len(generator.latency_samples) == 1
         assert generator.latency_samples[0] == 50.0
 
-    def test_add_drops_per_sec_sample(self, generator):
-        """Test adding drops per second samples."""
-        generator.add_drops_per_sec_sample(0)
-        generator.add_drops_per_sec_sample(2)
-        generator.add_drops_per_sec_sample(5)
-
-        assert len(generator.drops_per_sec_samples) == 3
-        assert generator.drops_per_sec_samples == [0, 2, 5]
-
-    def test_record_outage_event(self, generator):
-        """Test recording outage events."""
-        generator.record_outage_event(2.5)
-        generator.record_outage_event(1.2)
-        generator.record_outage_event(5.8)
-
-        assert len(generator.outage_events) == 3
-        assert generator.total_outage_seconds == pytest.approx(9.5)
-        assert generator.longest_outage_duration == 5.8
-
     def test_increment_total_seconds(self, generator):
         """Test incrementing total test duration."""
         assert generator.total_seconds == 0
@@ -137,21 +116,6 @@ class TestHistogramGenerator:
 
         # Check empty bin
         assert distribution[(60, 80)] == 0
-
-    def test_calculate_drops_distribution(self, generator):
-        """Test drops per second distribution calculation."""
-        generator.add_drops_per_sec_sample(0)
-        generator.add_drops_per_sec_sample(0)
-        generator.add_drops_per_sec_sample(1)
-        generator.add_drops_per_sec_sample(2)
-        generator.add_drops_per_sec_sample(2)
-        generator.add_drops_per_sec_sample(2)
-
-        distribution = generator._calculate_drops_distribution()
-
-        assert distribution[0] == 2
-        assert distribution[1] == 1
-        assert distribution[2] == 3
 
     def test_generate_histogram(self, generator, temp_output_dir):
         """Test histogram CSV generation."""
@@ -241,18 +205,6 @@ class TestHistogramGenerator:
 
         # All should be in the >2000ms bin
         assert distribution[(2000, float('inf'))] == 3
-
-    def test_outage_statistics(self, generator):
-        """Test outage statistics tracking."""
-        # Record multiple outages
-        generator.record_outage_event(1.5)
-        generator.record_outage_event(3.2)
-        generator.record_outage_event(0.8)
-        generator.record_outage_event(5.1)
-
-        assert len(generator.outage_events) == 4
-        assert generator.total_outage_seconds == pytest.approx(10.6)
-        assert generator.longest_outage_duration == 5.1
 
     def test_empty_histogram_generation(self, generator, temp_output_dir):
         """Test generating histogram with no data."""

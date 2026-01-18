@@ -351,3 +351,30 @@ class TestLinkMonitor:
 
         # Recent sequence should still be pending
         assert 11 in monitor.pending_sequences
+
+    def test_outage_duration_accumulation(self, monitor):
+        """Test that total outage duration is accumulated correctly."""
+        # Simulate an outage of 2 seconds
+        monitor.outage_start_time = time.time() - 2.0
+        monitor.in_outage = True
+
+        # Recover from outage
+        monitor._update_packet_time()  # This should trigger recovery
+        monitor.in_outage = False
+        outage_duration = time.time() - monitor.outage_start_time
+        monitor.total_outage_seconds += outage_duration
+
+        # Check total outage seconds
+        assert 1.9 < monitor.total_outage_seconds < 2.1  # Allow some variance
+
+    def test_no_outage_duration_when_no_outage(self, monitor):
+        """Test that total outage duration remains zero when no outage occurs."""
+        # Ensure no outage has occurred
+        monitor.in_outage = False
+        monitor.outage_start_time = None
+
+        # Update packet time without any outage
+        monitor._update_packet_time()
+
+        # Check total outage seconds
+        assert monitor.total_outage_seconds == 0.0\

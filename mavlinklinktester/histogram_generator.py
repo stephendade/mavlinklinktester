@@ -35,29 +35,13 @@ class HistogramGenerator:
 
         # Collected data
         self.latency_samples = []
-        self.drops_per_sec_samples = []
 
-        # Outage tracking
-        self.outage_events = []  # List of (start_time, duration)
-        self.total_outage_seconds = 0
-        self.longest_outage_duration = 0
         self.total_seconds = 0
 
     def add_latency_sample(self, latency_ms):
         """Add a latency sample."""
         if latency_ms is not None and latency_ms >= 0:
             self.latency_samples.append(latency_ms)
-
-    def add_drops_per_sec_sample(self, drops_per_sec):
-        """Add a dropped packets per second sample."""
-        self.drops_per_sec_samples.append(drops_per_sec)
-
-    def record_outage_event(self, duration_seconds):
-        """Record an outage event."""
-        self.outage_events.append(duration_seconds)
-        self.total_outage_seconds += duration_seconds
-        if duration_seconds > self.longest_outage_duration:
-            self.longest_outage_duration = duration_seconds
 
     def increment_total_seconds(self):
         """Increment total test duration."""
@@ -96,16 +80,5 @@ class HistogramGenerator:
                 if bin_start <= latency < bin_end:
                     distribution[(bin_start, bin_end)] += 1
                     break
-
-        return distribution
-
-    def _calculate_drops_distribution(self):
-        """Calculate dropped packets per second distribution."""
-        distribution = {}
-
-        for drops in self.drops_per_sec_samples:
-            if drops not in distribution:
-                distribution[drops] = 0
-            distribution[drops] += 1
 
         return distribution
