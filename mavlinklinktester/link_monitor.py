@@ -535,6 +535,12 @@ class LinkMonitor:
             logging.info('  Mean Latency: N/A')
             logging.info('  Median Latency: N/A')
 
+        # Add outage information
+        total_outage_seconds = self.total_outage_seconds
+        logging.info('  Total Outage Time: %.2fs', total_outage_seconds)
+        outage_percent = (total_outage_seconds / self.histogram.total_seconds) * 100
+        logging.info('  Outage Time: %.2f%%', outage_percent)
+
         return histogram_path
 
     async def _timesync_loop(self):
@@ -612,7 +618,6 @@ class LinkMonitor:
                     self.csv_file.flush()
 
                 # Update histogram
-                self.histogram.add_drops_per_sec_sample(self.current_dropped_packets)
                 self.histogram.increment_total_seconds()
 
                 # Print status to console
