@@ -77,6 +77,7 @@ class LinkMonitor:
         self.total_dropped_packets = 0
         self.total_bad_order_packets = 0
         self.latency_samples = []
+        self.total_outage_seconds = 0.0
 
         # Sequence tracking
         self.last_sequence = None
@@ -452,7 +453,7 @@ class LinkMonitor:
                 # Exit outage state - record the outage event
                 if self.outage_start_time:
                     outage_duration = current_time - self.outage_start_time
-                    self.histogram.record_outage_event(outage_duration)
+                    self.total_outage_seconds = self.total_outage_seconds + outage_duration
                 self.in_outage = False
                 self.outage_start_time = None
         else:
