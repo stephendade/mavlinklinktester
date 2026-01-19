@@ -57,7 +57,7 @@ class LinkMonitor:
 
         # MAVConnection instance
         self.connection: Optional[Union[UDPConnection, TCPConnection, SerialConnection]] = None
-        self.connection_type = None  # 'udpout', 'udpin', 'tcp', or 'serial'
+        self.connection_type = None  # 'udpout', 'udpin', 'tcp', 'tcpin', or 'serial'
         self.heartbeat_received = False
 
         # Running flag
@@ -65,7 +65,7 @@ class LinkMonitor:
         self.started = False  # Set to True after successful start
 
         # Current second metrics
-        self.current_latency_ms = 0.0
+        self.current_latency_ms = -1.0
         self.current_total_packets = 0
         self.current_dropped_packets = 0
         self.current_bad_order_packets = 0
@@ -135,7 +135,6 @@ class LinkMonitor:
         # Only handle connection loss after we've successfully started
         if self.started and self.running:
             logging.error('[%s] Connection lost: %s', self.link_id, name)
-            self.running = False
 
     async def start(self):
         """Start the link monitor."""
@@ -361,7 +360,7 @@ class LinkMonitor:
         self.csv_file = open(self.csv_filepath, 'w', newline='')
         self.csv_writer = csv.writer(self.csv_file)
         self.csv_writer.writerow(['elapsed_seconds', 'total_packets', 'dropped_packets',
-                                 'latency_ms', 'bad_order_packets', 'bytes', 'link_outage'])
+                                 'latency_rtt_ms', 'bad_order_packets', 'bytes', 'link_outage'])
         self.csv_file.flush()
 
         # Configure stream rates
@@ -534,13 +533,19 @@ class LinkMonitor:
             logging.info('  Total Bad Order: %s', self.total_bad_order_packets)
 
         if self.latency_samples:
-            mean_latency = sum(self.latency_samples) / len(self.latency_samples)
-            logging.info('  Mean Latency: %.2fms', mean_latency)
-            median_latency = sorted(self.latency_samples)[len(self.latency_samples) // 2]
-            logging.info('  Median Latency: %.2fms', median_latency)
+            # don't include measurements of -1 (no measurement)
+            filtered_samples = [lat for lat in self.latency_samples if lat >= 0]
+            if filtered_samples:
+                mean_latency = sum(filtered_samples) / len(filtered_samples)
+                logging.info('  Mean Latency (RTT): %.2fms', mean_latency)
+                median_latency = sorted(filtered_samples)[len(filtered_samples) // 2]
+                logging.info('  Median Latency (RTT): %.2fms', median_latency)
+            else:
+                logging.info('  Mean Latency (RTT): N/A')
+                logging.info('  Median Latency (RTT): N/A')
         else:
-            logging.info('  Mean Latency: N/A')
-            logging.info('  Median Latency: N/A')
+            logging.info('  Mean Latency (RTT): N/A')
+            logging.info('  Median Latency (RTT): N/A')
 
         # Add outage information
         total_outage_seconds = self.total_outage_seconds
@@ -549,7 +554,7 @@ class LinkMonitor:
         return histogram_path
 
     async def _timesync_loop(self):
-        """Send TIMESYNC messages at 1Hz for latency measurement."""
+        """Send TIMESYNC messages at 2Hz for latency measurement."""
         while self.running:
             try:
                 # Get current time in nanoseconds
@@ -569,7 +574,7 @@ class LinkMonitor:
                         ts1=now_ns  # ts1 = our timestamp
                     )
 
-                await asyncio.sleep(1.0)  # Send TIMESYNC every second
+                await asyncio.sleep(0.5)  # Send TIMESYNC every 0.5 seconds (2Hz)
             except asyncio.CancelledError:
                 break
             except Exception as e:
@@ -628,7 +633,7 @@ class LinkMonitor:
                 # Print status to console
                 status = 'OUTAGE' if self.current_outage else 'OK'
                 logging.info(
-                    '[%s] %4ds | Latency: %3dms | Pkts: %3d | Drops: %3d | BadOrder: %3d | Bytes: %5d | %s',
+                    '[%s] %4ds | Latency (RTT): %3dms | Pkts: %3d | Drops: %3d | BadOrder: %3d | Bytes: %5d | %s',
                     self.link_id, int(round(elapsed)), int(round(self.current_latency_ms)),
                     self.current_total_packets, self.current_dropped_packets,
                     self.current_bad_order_packets, self.current_bytes, status
@@ -644,5 +649,6 @@ class LinkMonitor:
                 self.current_dropped_packets = 0
                 self.current_bad_order_packets = 0
                 self.current_bytes = 0
+                self.current_latency_ms = -1.0
             except asyncio.CancelledError:
                 break
