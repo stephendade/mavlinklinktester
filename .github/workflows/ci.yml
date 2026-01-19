@@ -17,6 +17,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: 'pip'
       
       - name: Install Poetry
         uses: snok/install-poetry@v1
@@ -30,11 +31,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/pyproject.toml') }}
+          key: venv-lint-${{ runner.os }}-${{ hashFiles('**/pyproject.toml') }}
       
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --with dev --no-root
+        run: poetry install --no-interaction --only main,dev
       
       - name: Run flake8
         run: |
@@ -50,6 +51,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: 'pip'
       
       - name: Install Poetry
         uses: snok/install-poetry@v1
@@ -63,11 +65,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/pyproject.toml') }}
+          key: venv-typecheck-${{ runner.os }}-${{ hashFiles('**/pyproject.toml') }}
       
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --with dev --no-root
+        run: poetry install --no-interaction --only main,dev
       
       - name: Run mypy
         run: |
@@ -83,6 +85,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: 'pip'
       
       - name: Install Poetry
         uses: snok/install-poetry@v1
@@ -96,11 +99,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/pyproject.toml') }}
+          key: venv-deadcode-${{ runner.os }}-${{ hashFiles('**/pyproject.toml') }}
       
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --with dev --no-root
+        run: poetry install --no-interaction --only main,dev
       
       - name: Run vulture
         run: |
@@ -124,6 +127,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'pip'
       
       - name: Install Poetry
         uses: snok/install-poetry@v1
@@ -137,18 +141,18 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/pyproject.toml') }}
+          key: venv-test-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/pyproject.toml') }}
       
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --with dev --no-root
+        run: poetry install --no-interaction --with dev
       
       - name: Run pytest
         run: |
           poetry run pytest -v
       
       - name: Upload coverage reports
-        if: matrix.python-version == '3.11'
+        if: matrix.python-version == '3.12'
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
@@ -167,7 +171,8 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
+          cache: 'pip'
       
       - name: Install Poetry
         uses: snok/install-poetry@v1
