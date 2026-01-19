@@ -155,7 +155,7 @@ The tool generates CSV files in the specified output directory (default: `output
 - `elapsed_seconds`: Time elapsed since test start
 - `total_packets`: Total packets received
 - `dropped_packets`: Number of dropped packets
-- `latency_ms`: Round-trip latency in milliseconds
+- `latency_rtt_ms`: Round-trip-time latency in milliseconds
 - `bad_order_packets`: Packets received out of sequence
 - `bytes`: Total bytes transferred
 - `link_outage`: Boolean indicating if link is in outage state
@@ -184,7 +184,7 @@ poetry run pytest -v
 
 ### Code Quality
 
-The project uses flake8 for linting and mypy for type checking:
+The project uses flake8 for linting, mypy for type checking, and vulture for dead code detection:
 
 ```bash
 # Run linting
@@ -192,6 +192,9 @@ poetry run flake8 mavlinklinktester/ tests/
 
 # Run type checking
 poetry run mypy mavlinklinktester/
+
+# Check for dead code
+poetry run vulture mavlinklinktester/ --min-confidence 80
 ```
 
 ## License

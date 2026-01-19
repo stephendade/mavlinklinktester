@@ -73,6 +73,39 @@ jobs:
         run: |
           poetry run mypy mavlinklinktester/
 
+  deadcode:
+    name: Check for dead code with vulture
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 2.2.1
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/pyproject.toml') }}
+      
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --with dev --no-root
+      
+      - name: Run vulture
+        run: |
+          poetry run vulture mavlinklinktester/ --min-confidence 80
+
   test:
     name: Test Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
@@ -127,7 +160,7 @@ jobs:
   build:
     name: Build distribution packages
     runs-on: ubuntu-latest
-    needs: [lint, typecheck, test]
+    needs: [lint, typecheck, deadcode, test]
     steps:
       - uses: actions/checkout@v4
       
