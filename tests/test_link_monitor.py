@@ -377,4 +377,194 @@ class TestLinkMonitor:
         monitor._update_packet_time()
 
         # Check total outage seconds
-        assert monitor.total_outage_seconds == 0.0\
+        assert monitor.total_outage_seconds == 0.0
+
+    @pytest.mark.asyncio
+    async def test_outage_counted_when_program_closed_during_outage(self, monitor):
+        """Test that outage duration is counted when stop() is called during an active outage."""
+        # Simulate entering an outage state
+        outage_start = time.time() - 3.0  # Outage started 3 seconds ago
+        monitor.in_outage = True
+        monitor.outage_start_time = outage_start
+        monitor.total_outage_seconds = 0.0
+
+        # Verify we're in an outage
+        assert monitor.in_outage is True
+        assert monitor.outage_start_time is not None
+
+        # Call stop() while in outage
+        # Mock the connection and tasks to avoid actual cleanup
+        monitor.connection = Mock()
+        monitor.connection.close = Mock()
+        monitor.csv_file = None
+        monitor.tasks = []
+        monitor.start_time = time.time() - 10.0  # Started 10 seconds ago
+
+        # Mock the histogram generation
+        monitor.histogram = Mock()
+        monitor.histogram.total_seconds = 10
+        monitor.histogram.generate_histogram = Mock(return_value='/tmp/histogram.csv')
+
+        await monitor.stop()
+
+        # Verify that the outage duration was counted
+        # Should be approximately 3 seconds (with some tolerance for execution time)
+        assert monitor.total_outage_seconds >= 2.9
+        assert monitor.total_outage_seconds <= 3.1
+
+    @pytest.mark.asyncio
+    async def test_multiple_outages_counted_when_closed_during_final_outage(self, monitor):
+        """Test that multiple outages are properly accumulated when stop() is called during an outage."""
+        # Simulate first outage that was already resolved
+        monitor.total_outage_seconds = 5.0  # 5 seconds from previous outages
+
+        # Simulate entering a new outage state
+        outage_start = time.time() - 2.0  # Current outage started 2 seconds ago
+        monitor.in_outage = True
+        monitor.outage_start_time = outage_start
+
+        # Verify we're in an outage
+        assert monitor.in_outage is True
+        assert monitor.outage_start_time is not None
+
+        # Call stop() while in second outage
+        # Mock the connection and tasks to avoid actual cleanup
+        monitor.connection = Mock()
+        monitor.connection.close = Mock()
+        monitor.csv_file = None
+        monitor.tasks = []
+        monitor.start_time = time.time() - 20.0  # Started 20 seconds ago
+
+        # Mock the histogram generation
+        monitor.histogram = Mock()
+        monitor.histogram.total_seconds = 20
+        monitor.histogram.generate_histogram = Mock(return_value='/tmp/histogram.csv')
+
+        await monitor.stop()
+
+        # Verify that both outages are counted
+        # Should be approximately 7 seconds total (5 + 2)
+        assert monitor.total_outage_seconds >= 6.9
+        assert monitor.total_outage_seconds <= 7.1
+
+    @pytest.mark.asyncio
+    async def test_no_additional_outage_counted_when_closed_not_in_outage(self, monitor):
+        """Test that no extra outage time is added when stop() is called while not in outage."""
+        # Simulate previous outages that were resolved
+        monitor.total_outage_seconds = 3.0
+        monitor.in_outage = False
+        monitor.outage_start_time = None
+
+        # Call stop() while NOT in outage
+        # Mock the connection and tasks to avoid actual cleanup
+        monitor.connection = Mock()
+        monitor.connection.close = Mock()
+        monitor.csv_file = None
+        monitor.tasks = []
+        monitor.start_time = time.time() - 10.0
+
+        # Mock the histogram generation
+        monitor.histogram = Mock()
+        monitor.histogram.total_seconds = 10
+        monitor.histogram.generate_histogram = Mock(return_value='/tmp/histogram.csv')
+
+        await monitor.stop()
+
+        # Verify that no additional outage time was added
+        assert monitor.total_outage_seconds == 3.0
+
+    @pytest.mark.asyncio
+    async def test_latency_negative_one_excluded_from_stats(self, monitor):
+        """Test that latency measurements of -1 are excluded from statistics calculations."""
+        # Add a mix of valid latency samples and -1 values
+        monitor.latency_samples = [10.0, -1.0, 20.0, -1.0, 30.0, 15.0, -1.0]
+
+        # Mock the connection and tasks to avoid actual cleanup
+        monitor.connection = Mock()
+        monitor.connection.close = Mock()
+        monitor.csv_file = None
+        monitor.tasks = []
+        monitor.start_time = time.time() - 10.0
+
+        # Mock the histogram generation
+        monitor.histogram = Mock()
+        monitor.histogram.total_seconds = 10
+        monitor.histogram.generate_histogram = Mock(return_value='/tmp/histogram.csv')
+
+        # Capture log output to verify stats calculation
+        with patch('mavlinklinktester.link_monitor.logging') as mock_logging:
+            await monitor.stop()
+
+            # Find the mean latency log call
+            mean_latency_logged = False
+            expected_mean = (10.0 + 20.0 + 30.0 + 15.0) / 4  # Only valid samples: 18.75
+
+            for call in mock_logging.info.call_args_list:
+                if len(call[0]) > 0 and 'Mean Latency (RTT)' in str(call[0][0]):
+                    # Check that the value is close to expected (18.75ms)
+                    if len(call[0]) > 1:
+                        actual_mean = call[0][1]
+                        assert abs(actual_mean - expected_mean) < 0.01
+                        mean_latency_logged = True
+
+            assert mean_latency_logged, 'Mean latency should be logged'
+
+    @pytest.mark.asyncio
+    async def test_latency_all_negative_one_reports_na(self, monitor):
+        """Test that when all latency samples are -1, N/A is reported."""
+        # Add only -1 samples
+        monitor.latency_samples = [-1.0, -1.0, -1.0]
+
+        # Mock the connection and tasks to avoid actual cleanup
+        monitor.connection = Mock()
+        monitor.connection.close = Mock()
+        monitor.csv_file = None
+        monitor.tasks = []
+        monitor.start_time = time.time() - 10.0
+
+        # Mock the histogram generation
+        monitor.histogram = Mock()
+        monitor.histogram.total_seconds = 10
+        monitor.histogram.generate_histogram = Mock(return_value='/tmp/histogram.csv')
+
+        # Capture log output to verify N/A is reported
+        with patch('mavlinklinktester.link_monitor.logging') as mock_logging:
+            await monitor.stop()
+
+            # Find the mean latency log call
+            na_logged = False
+            for call in mock_logging.info.call_args_list:
+                if len(call[0]) > 0 and 'Mean Latency (RTT): N/A' in str(call[0]):
+                    na_logged = True
+
+            assert na_logged, 'N/A should be logged when all samples are -1'
+
+    @pytest.mark.asyncio
+    async def test_latency_empty_list_reports_na(self, monitor):
+        """Test that when no latency samples exist, N/A is reported."""
+        # Empty latency samples list
+        monitor.latency_samples = []
+
+        # Mock the connection and tasks to avoid actual cleanup
+        monitor.connection = Mock()
+        monitor.connection.close = Mock()
+        monitor.csv_file = None
+        monitor.tasks = []
+        monitor.start_time = time.time() - 10.0
+
+        # Mock the histogram generation
+        monitor.histogram = Mock()
+        monitor.histogram.total_seconds = 10
+        monitor.histogram.generate_histogram = Mock(return_value='/tmp/histogram.csv')
+
+        # Capture log output to verify N/A is reported
+        with patch('mavlinklinktester.link_monitor.logging') as mock_logging:
+            await monitor.stop()
+
+            # Find the mean latency log call
+            na_logged = False
+            for call in mock_logging.info.call_args_list:
+                if len(call[0]) > 0 and 'Mean Latency (RTT): N/A' in str(call[0]):
+                    na_logged = True
+
+            assert na_logged, 'N/A should be logged when no samples exist'
