@@ -488,6 +488,13 @@ class LinkMonitor:
         logging.info('[%s] Stopping monitor...', self.link_id)
         self.running = False
 
+        # If still in outage, record the outage time
+        if self.in_outage:
+            # Exit outage state - record the outage event
+            if self.outage_start_time:
+                outage_duration = time.time() - self.outage_start_time
+                self.total_outage_seconds = self.total_outage_seconds + outage_duration
+
         # Cancel all tasks
         for task in self.tasks:
             task.cancel()
@@ -537,10 +544,8 @@ class LinkMonitor:
 
         # Add outage information
         total_outage_seconds = self.total_outage_seconds
-        logging.info('  Total Outage Time: %.2fs', total_outage_seconds)
-        outage_percent = (total_outage_seconds / self.histogram.total_seconds) * 100
-        logging.info('  Outage Time: %.2f%%', outage_percent)
-
+        logging.info('  Total Outage Time: %.2fs (%.2f%%)', total_outage_seconds,
+                     (total_outage_seconds / self.histogram.total_seconds) * 100)
         return histogram_path
 
     async def _timesync_loop(self):
