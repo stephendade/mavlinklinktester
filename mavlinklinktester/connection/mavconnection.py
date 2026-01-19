@@ -166,7 +166,7 @@ class MAVConnection(asyncio.Protocol):
     async def wait_for_heartbeat(self):
         """Wait for heartbeat from target system/component."""
         start_time = time.time()
-        timeout = 10.0
+        timeout = 30.0
         last_heartbeat_sent = 0.0
 
         # Store heartbeat flag
@@ -178,7 +178,6 @@ class MAVConnection(asyncio.Protocol):
             if not self.server:
                 current_time = time.time()
                 if current_time - last_heartbeat_sent >= 1.0:
-                    logging.info('[%s] Sending HEARTBEAT to target...', self.link_id)
                     await self.send_heartbeat()
                     last_heartbeat_sent = current_time
 
