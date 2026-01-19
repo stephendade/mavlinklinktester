@@ -38,7 +38,7 @@ class MAVLinkTester:
         self.stopping = False
         self.loop = None
 
-    def _signal_handler(self, signum):
+    def _signal_handler(self, _signum):
         """Handle shutdown signals."""
         logging.info('Received shutdown signal, stopping gracefully...')
         self.running = False
