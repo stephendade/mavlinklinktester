@@ -78,6 +78,7 @@ class LinkMonitor:
         self.total_bad_order_packets = 0
         self.latency_samples = []
         self.total_outage_seconds = 0.0
+        self.total_bytes = 0
 
         # Sequence tracking
         self.last_sequence = None
@@ -117,6 +118,7 @@ class LinkMonitor:
 
         # Track bytes (MAVLink message length)
         self.current_bytes += len(msg.get_msgbuf())
+        self.total_bytes += len(msg.get_msgbuf())
 
         # Update last packet time for outage detection
         self._update_packet_time()
@@ -359,7 +361,7 @@ class LinkMonitor:
             f'{self.sanitized_connection}_metrics_{timestamp}.csv')
         self.csv_file = open(self.csv_filepath, 'w', newline='')
         self.csv_writer = csv.writer(self.csv_file)
-        self.csv_writer.writerow(['elapsed_seconds', 'total_packets', 'dropped_packets',
+        self.csv_writer.writerow(['elapsed_seconds', 'received_packets', 'dropped_packets',
                                  'latency_rtt_ms', 'bad_order_packets', 'bytes', 'link_outage'])
         self.csv_file.flush()
 
@@ -521,16 +523,17 @@ class LinkMonitor:
 
         # Print final summary
         logging.info('[%s] Final Summary:', self.link_id)
-        logging.info('  Total Packets: %s', self.total_packets)
+        logging.info('  Received Packets: %s', self.total_packets)
+        logging.info('  Received Bytes: %s', self.total_bytes)
 
         if self.total_packets > 0:
-            drop_percent = (self.total_dropped_packets / self.total_packets) * 100
+            drop_percent = (self.total_dropped_packets / (self.total_packets + self.total_dropped_packets)) * 100
             badorder_percent = (self.total_bad_order_packets / self.total_packets) * 100
-            logging.info('  Total Drops: %s (%.2f%%)', self.total_dropped_packets, drop_percent)
-            logging.info('  Total Bad Order: %s (%.2f%%)', self.total_bad_order_packets, badorder_percent)
+            logging.info('  Dropped Packets: %s (%.2f%%)', self.total_dropped_packets, drop_percent)
+            logging.info('  Bad Ordered Packets: %s (%.2f%%)', self.total_bad_order_packets, badorder_percent)
         else:
-            logging.info('  Total Drops: %s', self.total_dropped_packets)
-            logging.info('  Total Bad Order: %s', self.total_bad_order_packets)
+            logging.info('  Dropped Packets: %s', self.total_dropped_packets)
+            logging.info('  Bad Ordered Packets: %s', self.total_bad_order_packets)
 
         if self.latency_samples:
             # don't include measurements of -1 (no measurement)
@@ -549,7 +552,7 @@ class LinkMonitor:
 
         # Add outage information
         total_outage_seconds = self.total_outage_seconds
-        logging.info('  Total Outage Time: %.2fs (%.2f%%)', total_outage_seconds,
+        logging.info('  Outage Time: %.2fs (%.2f%%)', total_outage_seconds,
                      (total_outage_seconds / self.histogram.total_seconds) * 100)
         return histogram_path
 
