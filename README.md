@@ -153,11 +153,11 @@ Control the frequency of different MAVLink message streams (in Hz):
 The tool generates CSV files in the specified output directory (default: `output/`) containing:
 
 - `elapsed_seconds`: Time elapsed since test start
-- `total_packets`: Total packets received
+- `received_packets`: Number of packets received
 - `dropped_packets`: Number of dropped packets
 - `latency_rtt_ms`: Round-trip-time latency in milliseconds
-- `bad_order_packets`: Packets received out of sequence
-- `bytes`: Total bytes transferred
+- `bad_order_packets`: Number of packets received out of sequence
+- `bytes`: Bytes transferred
 - `link_outage`: Boolean indicating if link is in outage state
 
 CSV files are named with the connection string and timestamp for easy identification.
