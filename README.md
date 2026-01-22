@@ -1,6 +1,6 @@
-# The MAVLink Link Loss and Latency Tester (MAVLink Link Tester)
+# The MAVLink Link Tester (MLLT)
 
-A professional tool for characterizing the reliability and latency of MAVLink connections. Tests multiple MAVLink links simultaneously for packet loss, latency, and outages.
+A professional tool for characterizing the reliability and latency of MAVLink connections. Tests MAVLink links for packet loss, latency, and outages.
 
 ## Features
 
