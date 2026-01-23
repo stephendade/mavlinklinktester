@@ -2,6 +2,8 @@
 
 A professional tool for characterizing the reliability and latency of MAVLink connections. Tests MAVLink links for packet loss, latency, and outages.
 
+![Screenshot](images/main.png)
+
 ## Features
 
 - **Multi-link testing**: Monitor multiple MAVLink connections concurrently
@@ -150,7 +152,8 @@ Control the frequency of different MAVLink message streams (in Hz):
 
 ## Output
 
-The tool generates CSV files in the specified output directory (default: `output/`) containing:
+The tool generates CSV files of the per-second link statistics in the specified output directory
+(default: `output/`) containing:
 
 - `elapsed_seconds`: Time elapsed since test start
 - `received_packets`: Number of packets received
@@ -159,6 +162,12 @@ The tool generates CSV files in the specified output directory (default: `output
 - `bad_order_packets`: Number of packets received out of sequence
 - `bytes`: Bytes transferred
 - `link_outage`: Boolean indicating if link is in outage state
+
+![CSV Output](images/csvoutput.png)
+
+A csv file containing a histrogram of the latency is also generated in the same folder.
+
+![Histrogram Output](images/csvoutput_histro.png)
 
 CSV files are named with the connection string and timestamp for easy identification.
 
