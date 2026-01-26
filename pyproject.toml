@@ -1,6 +1,6 @@
 [project]
 name = "mavlinklinktester"
-version = "0.1.0"
+version = "0.9.0"
 description = "Characterise the reliability and latency of MAVLink connections"
 authors = [{ name = "Stephen Dade", email = "stephen_dade@hotmail.com" }]
 maintainers = [{ name = "Stephen Dade", email = "stephen_dade@hotmail.com" }]
