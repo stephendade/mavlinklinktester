@@ -206,6 +206,21 @@ poetry run mypy mavlinklinktester/
 poetry run vulture mavlinklinktester/ --min-confidence 80
 ```
 
+### Releasing new versions
+
+The CI will build a new release, based on the following commands:
+
+```bash
+poetry version patch  # or minor/major
+git add pyproject.toml
+git commit -m "Bump version to $(poetry version -s)"
+git tag v$(poetry version -s)
+git push origin main --tags
+```
+
+This must be done directly to the main branch.
+
+
 ## License
 
 This project is licensed under the GNU General Public License v3.0 or later. See the LICENSE file for details.
