@@ -150,16 +150,6 @@ jobs:
       - name: Run pytest
         run: |
           poetry run pytest -v
-      
-      - name: Upload coverage reports
-        if: matrix.python-version == '3.12'
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: |
-            htmlcov/
-            coverage.xml
-          retention-days: 30
 
   build:
     name: Build distribution packages
@@ -184,6 +174,10 @@ jobs:
       - name: Build package
         run: poetry build
       
+      - name: Get wheel filename
+        id: wheel
+        run: echo "name=$(basename dist/*.whl .whl)" >> $GITHUB_OUTPUT
+      
       - name: Verify package
         run: |
           pip install dist/*.whl
@@ -192,6 +186,6 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: python-package-distributions
-          path: dist/
+          name: ${{ steps.wheel.outputs.name }}
+          path: dist/*.whl
           retention-days: 30
