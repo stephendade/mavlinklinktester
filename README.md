@@ -23,7 +23,19 @@ A professional tool for characterizing the reliability and latency of MAVLink co
 
 ### Setup
 
-**Option 1: Install to your system/active environment (recommended for users)**
+**Option 1: Install from GitHub releases (recommended for users)**
+
+```bash
+# Install the latest release (replace VERSION with actual version number, e.g., 0.9.0)
+pip install https://github.com/stephendade/mavlinklinktester/releases/download/vVERSION/mavlinklinktester-VERSION-py3-none-any.whl
+
+# Example for version 0.9.0:
+pip install https://github.com/stephendade/mavlinklinktester/releases/download/v0.9.0/mavlinklinktester-0.9.0-py3-none-any.whl
+```
+
+Check the [releases page](https://github.com/stephendade/mavlinklinktester/releases) for the latest version number.
+
+**Option 2: Install to your system/active environment**
 
 ```bash
 # Clone the repository
@@ -35,7 +47,7 @@ cd mavlinklinktester
 pip install -e .
 ```
 
-**Option 2: Use Poetry for development (recommended for developers)**
+**Option 3: Use Poetry for development (recommended for developers)**
 
 ```bash
 # Clone the repository
@@ -160,7 +172,7 @@ The tool generates CSV files of the per-second link statistics in the specified 
 - `dropped_packets`: Number of dropped packets
 - `latency_rtt_ms`: Round-trip-time latency in milliseconds
 - `bad_order_packets`: Number of packets received out of sequence
-- `bytes`: Bytes transferred
+- `bytes`: Bytes received
 - `link_outage`: Boolean indicating if link is in outage state
 
 ![CSV Output](images/csvoutput.png)
@@ -170,6 +182,28 @@ A csv file containing a histrogram of the latency is also generated in the same 
 ![Histrogram Output](images/csvoutput_histro.png)
 
 CSV files are named with the connection string and timestamp for easy identification.
+
+### Output Definitions
+
+A packet is counted as ``bad_order_packets`` of it arrives out-of-sequence within 50 packets of
+the expected sequence. After this point, the packet is counted as ``dropped_packets``.
+
+The ``link_outage`` is set to ``1`` is no packets are recieved in ``--outage-timeout`` seconds.
+It is set back to ``0`` when at least ``--recovery-hysteresis`` packets are recieved.
+
+Received MAVLink packets with a bad CRC are counted as ``dropped_packets``.
+
+Under high loss scenarios (>20% loss), ``dropped_packets`` may not be accurate, due to an
+inability to distinguish large loss gaps. For example a received sequence of ``1, 2, 3, 50, 4``
+will not be able to know if the gap between ``50`` and ``4`` is 201 packets or some muliple (ie. 456, 711).
+
+For a more accurate loss measurement, it is recommended to test against a known-good link and compare the number
+of received packets.
+
+The ``bytes`` field will only count the bytes from ``received_packets``. It will not count any bad or corrupted data.
+
+The ``latency_rtt_ms`` will be ``-1`` if a ping response is not received in a one-second time period.
+
 
 ## Development
 
