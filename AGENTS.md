@@ -119,8 +119,9 @@ poetry run mavlink-link-tester.py --system-id 1 --component-id 1 \
 
 - MAVLink messages have 8-bit sequence numbers (0-255, wraps around)
 - Out-of-order packets are detected and tracked separately from drops
-- Pending sequences older than 3 seconds are considered truly dropped
+- Pending sequences more than 50 packets old are considered truly dropped
 - Last sequence is tracked per connection
+- Total packet count is maintained to track age of pending sequences
 
 ### Outage Detection
 

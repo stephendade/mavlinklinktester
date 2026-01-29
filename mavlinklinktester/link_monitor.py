@@ -82,7 +82,8 @@ class LinkMonitor:
 
         # Sequence tracking
         self.last_sequence = None
-        self.pending_sequences = {}  # {seq: timestamp} - sequences we're waiting for
+        self.pending_sequences = {}  # {seq: packet_count} - sequences we're waiting for
+        self.packet_count = 0  # Total packet count for tracking pending sequence age
 
         # TIMESYNC tracking for latency measurement
         self.sent_timestamps = []
@@ -383,7 +384,7 @@ class LinkMonitor:
     def _track_sequence(self, msg):
         """Track MAVLink message sequence numbers."""
         seq = msg.get_seq()
-        current_time = time.time()
+        self.packet_count += 1
 
         # Check if this sequence was in our pending list (arrived out of order)
         if seq in self.pending_sequences:
@@ -392,10 +393,9 @@ class LinkMonitor:
             self.current_bad_order_packets += 1
             return  # Don't update last_sequence for out-of-order packets
 
-        # Clean up old pending sequences (older than 3 seconds) - count them as truly dropped
-        timeout_threshold = current_time - 3.0
-        for pending_seq, pending_time in list(self.pending_sequences.items()):
-            if pending_time < timeout_threshold:
+        # Clean up old pending sequences (more than 50 packets old) - count them as truly dropped
+        for pending_seq, pending_count in list(self.pending_sequences.items()):
+            if self.packet_count - pending_count > 50:
                 self.current_dropped_packets += 1
                 del self.pending_sequences[pending_seq]
 
@@ -417,13 +417,13 @@ class LinkMonitor:
                     missing_count = seq - expected_seq
                     for i in range(missing_count):
                         missing_seq = (expected_seq + i) % 256
-                        self.pending_sequences[missing_seq] = current_time
+                        self.pending_sequences[missing_seq] = self.packet_count
                 else:
                     # Wrap-around gap (255 -> 0)
                     missing_count = (256 - self.last_sequence - 1) + seq
                     for i in range(missing_count):
                         missing_seq = (expected_seq + i) % 256
-                        self.pending_sequences[missing_seq] = current_time
+                        self.pending_sequences[missing_seq] = self.packet_count
 
         self.last_sequence = seq
 

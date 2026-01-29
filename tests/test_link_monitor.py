@@ -246,6 +246,60 @@ class TestLinkMonitor:
         assert monitor.current_bytes == initial_bytes + 30
         assert monitor.last_packet_time is not None
 
+    def test_bad_crc_packets_not_counted(self, monitor):
+        """Test that packets with bad CRC are not counted or processed.
+
+        Packets with bad CRC should be silently discarded by pymavlink's
+        parse_buffer() when robust_parsing is enabled. They won't increment
+        packet counters and will appear as gaps in the sequence numbers.
+        """
+        # Create a mock connection with parse_buffer
+        monitor.connection = Mock()
+        monitor.connection.mod = Mock()
+        monitor.connection.target_system = 1
+        monitor.connection.target_component = 1
+
+        # Mock parse_buffer to return empty list (simulating bad CRC rejection)
+        monitor.connection.mav = Mock()
+        monitor.connection.mav.parse_buffer = Mock(return_value=[])
+
+        initial_packets = monitor.current_total_packets
+        initial_bytes = monitor.current_bytes
+
+        # Simulate raw data with a corrupted packet
+        corrupted_data = b'\xfe\x09\x00\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\xFF\xFF'
+
+        # Process the corrupted packet through connection
+        monitor.connection.processPackets(corrupted_data)
+
+        # Verify that no packets were counted
+        assert monitor.current_total_packets == initial_packets
+        assert monitor.current_bytes == initial_bytes
+
+        # Now send a valid packet (sequence 1) to verify gap detection
+        msg_valid = Mock()
+        msg_valid.get_type.return_value = 'HEARTBEAT'
+        msg_valid.get_seq.return_value = 1
+        msg_valid.get_msgbuf.return_value = b'\x00' * 30
+
+        # First send sequence 0
+        msg0 = Mock()
+        msg0.get_type.return_value = 'HEARTBEAT'
+        msg0.get_seq.return_value = 0
+        msg0.get_msgbuf.return_value = b'\x00' * 30
+        monitor._on_message_received(msg0, 'test')
+
+        # Then skip to sequence 2 (as if sequence 1 had bad CRC)
+        msg2 = Mock()
+        msg2.get_type.return_value = 'HEARTBEAT'
+        msg2.get_seq.return_value = 2
+        msg2.get_msgbuf.return_value = b'\x00' * 30
+        monitor._on_message_received(msg2, 'test')
+
+        # Sequence 1 should be pending (appears as dropped due to bad CRC)
+        assert 1 in monitor.pending_sequences
+        assert len(monitor.pending_sequences) == 1
+
     @pytest.mark.asyncio
     async def test_connection_string_parsing_udpin(self, monitor_config, temp_output_dir):
         """Test parsing of udpin connection string."""
@@ -328,16 +382,17 @@ class TestLinkMonitor:
         assert parts[1] == '57600'
 
     def test_pending_sequence_timeout(self, monitor):
-        """Test that old pending sequences are marked as dropped."""
-        # Add a pending sequence from 4 seconds ago
-        old_time = time.time() - 4.0
-        monitor.pending_sequences[10] = old_time
+        """Test that old pending sequences (>50 packets old) are marked as dropped."""
+        # Set initial packet count
+        monitor.packet_count = 100
 
-        # Add a recent pending sequence
-        recent_time = time.time() - 0.5
-        monitor.pending_sequences[11] = recent_time
+        # Add a pending sequence from 60 packets ago (should be dropped)
+        monitor.pending_sequences[10] = 40  # packet_count - 40 = 60 packets old
 
-        # Process a new message
+        # Add a recent pending sequence (20 packets old, should remain)
+        monitor.pending_sequences[11] = 80  # packet_count - 80 = 20 packets old
+
+        # Process a new message (increments packet_count to 101)
         msg = Mock()
         msg.get_seq.return_value = 12
         msg.get_msgbuf.return_value = b'\x00' * 30
@@ -345,11 +400,11 @@ class TestLinkMonitor:
 
         monitor._track_sequence(msg)
 
-        # Old sequence should be dropped
+        # Old sequence (>50 packets) should be dropped
         assert 10 not in monitor.pending_sequences
         assert monitor.current_dropped_packets == 1
 
-        # Recent sequence should still be pending
+        # Recent sequence (<50 packets) should still be pending
         assert 11 in monitor.pending_sequences
 
     def test_outage_duration_accumulation(self, monitor):
