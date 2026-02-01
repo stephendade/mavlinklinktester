@@ -191,7 +191,8 @@ the expected sequence. After this point, the packet is counted as ``dropped_pack
 The ``link_outage`` is set to ``1`` is no packets are recieved in ``--outage-timeout`` seconds.
 It is set back to ``0`` when at least ``--recovery-hysteresis`` packets are recieved.
 
-Received MAVLink packets with a bad CRC are counted as ``dropped_packets``.
+Received MAVLink packets with a bad CRC or message ID of ``BAD_DATA`` will be ignored. As explained above,
+it will be included in ``dropped_packets`` if this creates a gap in the message sequence.
 
 Under high loss scenarios (>20% loss), ``dropped_packets`` may not be accurate, due to an
 inability to distinguish large loss gaps. For example a received sequence of ``1, 2, 3, 50, 4``
@@ -204,6 +205,8 @@ The ``bytes`` field will only count the bytes from ``received_packets``. It will
 
 The ``latency_rtt_ms`` will be ``-1`` if a ping response is not received in a one-second time period.
 
+Any received packets with an incorrect System or Component ID (as per ``--system-id`` and ``--component_id``)
+will be ignored.
 
 ## Development
 

@@ -114,6 +114,14 @@ class LinkMonitor:
     def _on_message_received(self, msg, name):
         """Callback for when a MAVLink message is received."""
 
+        # Filter messages by target system/component
+        if (msg.get_srcSystem() != self.target_system or msg.get_srcComponent() != self.target_component):
+            return  # Ignore messages not from target
+
+        # Filter any BAD_DATA messages to a dropped packet
+        if msg.get_type() == 'BAD_DATA':
+            return  # Ignore bad data messages
+
         # Track all packets
         self.current_total_packets += 1
 

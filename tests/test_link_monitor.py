@@ -287,6 +287,8 @@ class TestLinkMonitor:
         msg0.get_type.return_value = 'HEARTBEAT'
         msg0.get_seq.return_value = 0
         msg0.get_msgbuf.return_value = b'\x00' * 30
+        msg0.get_srcSystem.return_value = 1
+        msg0.get_srcComponent.return_value = 1
         monitor._on_message_received(msg0, 'test')
 
         # Then skip to sequence 2 (as if sequence 1 had bad CRC)
@@ -294,11 +296,181 @@ class TestLinkMonitor:
         msg2.get_type.return_value = 'HEARTBEAT'
         msg2.get_seq.return_value = 2
         msg2.get_msgbuf.return_value = b'\x00' * 30
+        msg2.get_srcSystem.return_value = 1
+        msg2.get_srcComponent.return_value = 1
         monitor._on_message_received(msg2, 'test')
 
         # Sequence 1 should be pending (appears as dropped due to bad CRC)
         assert 1 in monitor.pending_sequences
         assert len(monitor.pending_sequences) == 1
+
+    def test_filter_wrong_system_id(self, monitor):
+        """Test that messages from wrong system ID are filtered out."""
+        # Configure monitor for system 1, component 1
+        monitor.target_system = 1
+        monitor.target_component = 1
+
+        # Create message from system 2, component 1 (wrong system)
+        msg = Mock()
+        msg.get_type.return_value = 'HEARTBEAT'
+        msg.get_seq.return_value = 0
+        msg.get_msgbuf.return_value = b'\x00' * 30
+        msg.get_srcSystem.return_value = 2  # Wrong system ID
+        msg.get_srcComponent.return_value = 1
+
+        initial_packets = monitor.current_total_packets
+        initial_bytes = monitor.current_bytes
+
+        monitor._on_message_received(msg, 'test_connection')
+
+        # Message should be filtered out - no counters updated
+        assert monitor.current_total_packets == initial_packets
+        assert monitor.current_bytes == initial_bytes
+        assert monitor.last_sequence is None
+
+    def test_filter_wrong_component_id(self, monitor):
+        """Test that messages from wrong component ID are filtered out."""
+        # Configure monitor for system 1, component 1
+        monitor.target_system = 1
+        monitor.target_component = 1
+
+        # Create message from system 1, component 2 (wrong component)
+        msg = Mock()
+        msg.get_type.return_value = 'HEARTBEAT'
+        msg.get_seq.return_value = 0
+        msg.get_msgbuf.return_value = b'\x00' * 30
+        msg.get_srcSystem.return_value = 1
+        msg.get_srcComponent.return_value = 2  # Wrong component ID
+
+        initial_packets = monitor.current_total_packets
+        initial_bytes = monitor.current_bytes
+
+        monitor._on_message_received(msg, 'test_connection')
+
+        # Message should be filtered out - no counters updated
+        assert monitor.current_total_packets == initial_packets
+        assert monitor.current_bytes == initial_bytes
+        assert monitor.last_sequence is None
+
+    def test_filter_wrong_system_and_component_id(self, monitor):
+        """Test that messages from wrong system and component ID are filtered out."""
+        # Configure monitor for system 1, component 1
+        monitor.target_system = 1
+        monitor.target_component = 1
+
+        # Create message from system 2, component 2 (both wrong)
+        msg = Mock()
+        msg.get_type.return_value = 'HEARTBEAT'
+        msg.get_seq.return_value = 0
+        msg.get_msgbuf.return_value = b'\x00' * 30
+        msg.get_srcSystem.return_value = 2  # Wrong system ID
+        msg.get_srcComponent.return_value = 2  # Wrong component ID
+
+        initial_packets = monitor.current_total_packets
+        initial_bytes = monitor.current_bytes
+
+        monitor._on_message_received(msg, 'test_connection')
+
+        # Message should be filtered out - no counters updated
+        assert monitor.current_total_packets == initial_packets
+        assert monitor.current_bytes == initial_bytes
+        assert monitor.last_sequence is None
+
+    def test_accept_correct_system_and_component_id(self, monitor):
+        """Test that messages with correct system and component ID are accepted."""
+        # Configure monitor for system 1, component 1
+        monitor.target_system = 1
+        monitor.target_component = 1
+
+        # Create message from system 1, component 1 (correct)
+        msg = Mock()
+        msg.get_type.return_value = 'HEARTBEAT'
+        msg.get_seq.return_value = 0
+        msg.get_msgbuf.return_value = b'\x00' * 30
+        msg.get_srcSystem.return_value = 1  # Correct system ID
+        msg.get_srcComponent.return_value = 1  # Correct component ID
+
+        initial_packets = monitor.current_total_packets
+        initial_bytes = monitor.current_bytes
+
+        monitor._on_message_received(msg, 'test_connection')
+
+        # Message should be accepted - counters updated
+        assert monitor.current_total_packets == initial_packets + 1
+        assert monitor.current_bytes == initial_bytes + 30
+        assert monitor.last_sequence == 0
+
+    def test_filter_bad_data_message(self, monitor):
+        """Test that BAD_DATA messages are filtered out."""
+        # Create BAD_DATA message with correct system/component
+        msg = Mock()
+        msg.get_type.return_value = 'BAD_DATA'
+        msg.get_seq.return_value = 0
+        msg.get_msgbuf.return_value = b'\x00' * 30
+        msg.get_srcSystem.return_value = 1
+        msg.get_srcComponent.return_value = 1
+
+        initial_packets = monitor.current_total_packets
+        initial_bytes = monitor.current_bytes
+
+        monitor._on_message_received(msg, 'test_connection')
+
+        # BAD_DATA should be filtered out - no counters updated
+        assert monitor.current_total_packets == initial_packets
+        assert monitor.current_bytes == initial_bytes
+        assert monitor.last_sequence is None
+
+    def test_filter_bad_data_in_sequence(self, monitor):
+        """Test that BAD_DATA messages don't affect sequence tracking."""
+        # Send sequence 0, 1 normally
+        for seq in [0, 1]:
+            msg = Mock()
+            msg.get_seq.return_value = seq
+            msg.get_msgbuf.return_value = b'\x00' * 30
+            msg.get_type.return_value = 'HEARTBEAT'
+            msg.get_srcSystem.return_value = 1
+            msg.get_srcComponent.return_value = 1
+            monitor._on_message_received(msg, 'test')
+
+        # Send BAD_DATA with sequence 2 (should be ignored)
+        bad_msg = Mock()
+        bad_msg.get_seq.return_value = 2
+        bad_msg.get_msgbuf.return_value = b'\x00' * 30
+        bad_msg.get_type.return_value = 'BAD_DATA'
+        bad_msg.get_srcSystem.return_value = 1
+        bad_msg.get_srcComponent.return_value = 1
+        monitor._on_message_received(bad_msg, 'test')
+
+        # Send sequence 3 normally
+        msg = Mock()
+        msg.get_seq.return_value = 3
+        msg.get_msgbuf.return_value = b'\x00' * 30
+        msg.get_type.return_value = 'HEARTBEAT'
+        msg.get_srcSystem.return_value = 1
+        msg.get_srcComponent.return_value = 1
+        monitor._on_message_received(msg, 'test')
+
+        # Last sequence should be 3, and sequence 2 should be pending (gap)
+        assert monitor.last_sequence == 3
+        assert 2 in monitor.pending_sequences
+        assert monitor.current_total_packets == 3  # Only non-BAD_DATA counted
+
+    def test_filter_both_bad_data_and_wrong_sysid(self, monitor):
+        """Test that messages with both BAD_DATA and wrong system ID are filtered."""
+        # Create BAD_DATA message with wrong system ID
+        msg = Mock()
+        msg.get_type.return_value = 'BAD_DATA'
+        msg.get_seq.return_value = 0
+        msg.get_msgbuf.return_value = b'\x00' * 30
+        msg.get_srcSystem.return_value = 2  # Wrong system
+        msg.get_srcComponent.return_value = 1
+
+        initial_packets = monitor.current_total_packets
+
+        monitor._on_message_received(msg, 'test_connection')
+
+        # Should be filtered out by system ID check (happens first)
+        assert monitor.current_total_packets == initial_packets
 
     @pytest.mark.asyncio
     async def test_connection_string_parsing_udpin(self, monitor_config, temp_output_dir):
